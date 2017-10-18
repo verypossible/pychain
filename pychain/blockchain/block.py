@@ -1,5 +1,11 @@
 from ..hashing import generate_hash
 
+from .block_entry import BlockEntry
+
+
+class BlockError(Exception):
+    pass
+
 
 class Block:
 
@@ -21,6 +27,12 @@ class Block:
         return generate_hash(entry_hashes)
 
     def add_entry(self, entry):
+        if self.__is_closed:
+            raise BlockError('Cannot add to closed block')
+
+        if not isinstance(entry, BlockEntry):
+            entry = BlockEntry(entry)
+
         self.__entries.append(entry)
         if len(self.__entries) >= self.BLOCK_SIZE:
             self.close()
@@ -53,11 +65,6 @@ class Block:
                 'data': data,
                 'hash': _hash,
         }
-
-
-class BlockException(Exception):
-    pass
-
 
 #
 # def add_block_to_redis(block):

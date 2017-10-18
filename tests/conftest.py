@@ -10,9 +10,6 @@ CWD = Path(__file__).resolve().parent
 code_dir = CWD / '..'
 sys.path.append(str(code_dir))
 
-#os.environ.update({})
-
-print(sys.path)
 
 def pytest_configure(config):
     """Called at the start of the entire test run"""

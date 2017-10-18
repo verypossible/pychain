@@ -3,7 +3,9 @@ from .block_entry import BlockEntry
 
 from ..helpers import get_timestamp
 
-GENESIS_BLOCK = Block(index=0, prev_hash='0', timestamp=get_timestamp())
+
+def get_genesis_block():
+    return Block(index=0, prev_hash='0', timestamp=get_timestamp())
 
 
 class _Chain:
@@ -30,9 +32,10 @@ class _Chain:
 
         # if this is the genesis block, add it and create the first block
         if not self.__blockchain:
-            GENESIS_BLOCK.add_entry(block_entry)
-            self.__blockchain.append(GENESIS_BLOCK)
-            next_block = self._get_new_block(GENESIS_BLOCK)
+            genesis_block = get_genesis_block()
+            genesis_block.add_entry(block_entry)
+            self.__blockchain.append(genesis_block)
+            next_block = self._get_new_block(genesis_block)
             self.__blockchain.append(next_block)
         else:
             current_block = self.get_current_block()
@@ -60,5 +63,5 @@ class _Chain:
 
         return True
 
-# dumb singletone
+# dumb singleton
 Chain = _Chain()

@@ -4,3 +4,5 @@ redis-data/
 *.pyc
 .cache
 __pycache__
+.coverage
+htmlcov

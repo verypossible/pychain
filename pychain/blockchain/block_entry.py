@@ -9,7 +9,10 @@ class BlockEntry:
             data = OrderedDict(sorted(data.items(), key=lambda t: t[0]))
 
         self._data = data
-        assert self._data
+
+        # ensure data is non-empty but allow for zero
+        if not self._data and self._data != 0:
+            assert self._data
 
     def generate_hash(self):
         return generate_hash(self._data)
