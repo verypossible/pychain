@@ -2,3 +2,5 @@ redis-data/
 *.swp
 *.redis-data
 *.pyc
+.cache
+__pycache__
