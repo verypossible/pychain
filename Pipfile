@@ -1,0 +1,18 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+
+eventlet = "*"
+Flask = "*"
+Flask-SocketIO = "*"
+"psycopg2" = "*"
+redis = "*"
+SQLAlchemy = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-mock = "*"
