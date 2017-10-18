@@ -1,0 +1,4 @@
+redis-data/
+*.swp
+*.redis-data
+*.pyc
