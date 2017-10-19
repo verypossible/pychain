@@ -1,5 +1,5 @@
 from .block import Block
-from .block_entry import BlockEntry
+from .transaction import Transaction
 
 from ..helpers import get_timestamp
 
@@ -27,13 +27,13 @@ class _Chain:
         assert self.is_valid_new_block(new_block, current_block)
         return new_block
 
-    def add_entry(self, data):
-        block_entry = BlockEntry(data)
+    def add_transaction(self, data):
+        transaction = Transaction(data)
 
         # if this is the genesis block, add it and create the first block
         if not self.__blockchain:
             genesis_block = get_genesis_block()
-            genesis_block.add_entry(block_entry)
+            genesis_block.add_transaction(transaction)
             self.__blockchain.append(genesis_block)
             next_block = self._get_new_block(genesis_block)
             self.__blockchain.append(next_block)
@@ -42,7 +42,7 @@ class _Chain:
             if current_block.is_closed():
                 current_block = self._get_new_block(current_block)
                 self.__blockchain.append(current_block)
-            current_block.add_entry(block_entry)
+            current_block.add_transaction(transaction)
 
     def get_current_block(self):
         return self.__blockchain[-1]

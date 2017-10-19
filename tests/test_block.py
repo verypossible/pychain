@@ -18,17 +18,25 @@ _test_entries = (
         (range(5), 5),
 )
 
-@pytest.mark.parametrize('entries, expected_len', _test_entries)
-def test_len_entries(entries, expected_len, block):
-    for data in entries:
-        block.add_entry(data)
+@pytest.mark.parametrize('transactions, expected_len', _test_entries)
+def test_len_transactions(transactions, expected_len, block):
+    for data in transactions:
+        block.add_transaction(data)
     assert len(block) == expected_len
 
 
 def test_cannot_add_to_closed_block(block):
     for i in range(5):
-        block.add_entry(i)
+        block.add_transaction(i)
 
     with pytest.raises(BlockError) as e:
-        block.add_entry('abc')
+        block.add_transaction('abc')
+
+def test_hash_generated(block):
+    block.add_transaction('abc')
+    block.add_transaction({'name': 'bz', 'age': 44})
+    assert not block.hash
+    block.close()
+    expected = 'f5fed7aed4098648431dd1e3f988c501ef626542d12bcd5aefd66d71e39231b9'
+    assert block.hash == expected
 

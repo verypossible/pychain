@@ -1,6 +1,6 @@
 from ..hashing import generate_hash
 
-from .block_entry import BlockEntry
+from .transaction import Transaction
 
 
 class BlockError(Exception):
@@ -16,25 +16,28 @@ class Block:
         self.prev_hash = prev_hash
         self.timestamp = timestamp
         self.block_hash = None
-        self.__entries = []
+        self.__transactions = []
         self.__is_closed = False
+        self.hash = None
 
     def __len__(self):
-        return len(self.__entries)
+        return len(self.__transactions)
 
     def generate_hash(self):
-        entry_hashes = (entry.generate_hash() for entry in self.__entries)
-        return generate_hash(entry_hashes)
+        transaction_hashes = [t.generate_hash() for t in self.__transactions]
+        # Critical component is to add the previous hash as part of the data to create this blocks
+        # hash.  Without this, the block's hash isn't secure in any way.
+        return generate_hash([self.prev_hash] + transaction_hashes)
 
-    def add_entry(self, entry):
+    def add_transaction(self, transaction):
         if self.__is_closed:
             raise BlockError('Cannot add to closed block')
 
-        if not isinstance(entry, BlockEntry):
-            entry = BlockEntry(entry)
+        if not isinstance(transaction, Transaction):
+            transaction = Transaction(transaction)
 
-        self.__entries.append(entry)
-        if len(self.__entries) >= self.BLOCK_SIZE:
+        self.__transactions.append(transaction)
+        if len(self.__transactions) >= self.BLOCK_SIZE:
             self.close()
 
     def close(self):
