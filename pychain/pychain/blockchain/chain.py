@@ -4,6 +4,10 @@ from .transaction import Transaction
 from ..helpers import get_timestamp
 
 
+# dumb singleton
+Chain = None
+
+
 def get_genesis_block():
     return Block(index=0, prev_hash='0', timestamp=get_timestamp())
 
@@ -17,6 +21,16 @@ class _Chain:
     def __len__(self):
         return len(self.__blockchain)
 
+    def __iter__(self):
+        return iter(self.__blockchain)
+
+    def _init_genesis_block(self):
+        if not self.__blockchain:
+            genesis_block = get_genesis_block()
+            genesis_block.add_transaction('Genesis')
+            genesis_block.close()
+            self.__blockchain.append(genesis_block)
+
     def _get_new_block(self, current_block):
         current_block.close()
         new_block = Block(
@@ -24,44 +38,40 @@ class _Chain:
                 prev_hash=current_block.hash,
                 timestamp=get_timestamp(),
         )
-        assert self.is_valid_new_block(new_block, current_block)
+        assert self.is_valid_new_block(current_block, new_block)
         return new_block
 
     def add_transaction(self, data):
         transaction = Transaction(data)
 
-        # if this is the genesis block, add it and create the first block
-        if not self.__blockchain:
-            genesis_block = get_genesis_block()
-            genesis_block.add_transaction(transaction)
-            self.__blockchain.append(genesis_block)
-            next_block = self._get_new_block(genesis_block)
-            self.__blockchain.append(next_block)
-        else:
-            current_block = self.get_current_block()
-            if current_block.is_closed():
-                current_block = self._get_new_block(current_block)
-                self.__blockchain.append(current_block)
-            current_block.add_transaction(transaction)
+        current_block = self.get_current_block()
+        if current_block.is_closed():
+            current_block = self._get_new_block(current_block)
+            self.__blockchain.append(current_block)
+
+        current_block.add_transaction(transaction)
 
     def get_current_block(self):
         return self.__blockchain[-1]
 
-    def is_valid_new_block(self, new_block, prev_block):
+    def is_valid_new_block(self, prev_block, new_block):
         # If the blockhain is empty, the first entry is defined to be valid
         if not self.__blockchain:
             return True
 
-        if new_block.index != prev_block.index + 1:
+        if prev_block.index + 1 != new_block.index:
             return False
 
-        if new_block.prev_hash != prev_block.hash:
+        if prev_block.hash != new_block.prev_hash:
             return False
 
-        # if hash(prev_block) != prev_block.hash:
+        # if prev_block.hash != hash(prev_block):
         #     return False
 
         return True
 
-# dumb singleton
-Chain = _Chain()
+
+# Dumb initialization
+if Chain is None:
+    Chain = _Chain()
+    #Chain._init_genesis_block()

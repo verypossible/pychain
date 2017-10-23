@@ -15,7 +15,6 @@ class Block:
         self.index = index
         self.prev_hash = prev_hash
         self.timestamp = timestamp
-        self.block_hash = None
         self.__transactions = []
         self.__is_closed = False
         self.hash = None
@@ -49,25 +48,26 @@ class Block:
         return self.__is_closed
 
     def as_dict(self):
-        data = self.data
-        if hasattr(data, 'decode'):
-            data = data.decode('utf-8')
-
-        prev_hash = self.prev_hash
-        if hasattr(prev_hash, 'decode'):
-            prev_hash = prev_hash.decode('utf-8')
-
-        _hash = self.hash
-        if hasattr(_hash, 'decode'):
-            _hash = _hash.decode('utf-8')
-
         return {
                 'index': self.index,
-                'prev_hash': prev_hash,
+                'prev_hash': self.prev_hash,
                 'timestamp': self.timestamp,
-                'data': data,
-                'hash': _hash,
+                'transactions': [t._data for t in self.__transactions],
+                'hash': self.hash,
+                'is_closed': self.is_closed(),
         }
+
+    @staticmethod
+    def validate_block(prev_block, new_block):
+        if previous_block.index + 1 != new_block.index:
+            raise BlockError('invalid index')
+
+        if previous_block.hash != new_block.prev_hash:
+            raise BlockError('invalid previoushash');
+
+        return True
+
+
 
 #
 # def add_block_to_redis(block):
@@ -81,17 +81,6 @@ class Block:
 #     return result
 #
 #
-
-
-def add_block_from_http_payload(data):
-    previous_block = get_latest_block()
-    new_block = generate_next_block(data, previous_block)
-
-    validate_block(new_block, previous_block)
-
-    print(add_block_to_redis(new_block))
-    return new_block
-
 
 
 def get_latest_block(as_dict=False):
@@ -111,16 +100,3 @@ def generate_next_block(block_data, previous_block=None):
     next_index = previous_block.index + 1
     next_timestamp = get_timestamp()
     return Block(next_index, previous_block.hash, next_timestamp, block_data)
-
-
-def validate_block(new_block, previous_block):
-    if previous_block.index + 1 != new_block.index:
-        raise BlockException('invalid index')
-
-    if previous_block.hash != new_block.prev_hash:
-        raise BlockException('invalid previoushash');
-
-    return True
-
-
-

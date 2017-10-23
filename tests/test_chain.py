@@ -6,13 +6,19 @@ from pychain.blockchain.chain import _Chain
 @pytest.fixture()
 def chain():
     chain = _Chain()
-    chain.add_transaction('Genesis')
+    chain._init_genesis_block()
     return chain
 
 
 def test_chain_inits_with_genesis(chain):
+    assert len(chain) == 1
+    assert len(chain.get_current_block()) == 1
+
+
+def test_chain_inits_single_transaction(chain):
+    chain.add_transaction([1, 2, 3, 4, 5])
     assert len(chain) == 2
-    assert len(chain.get_current_block()) == 0
+    assert len(chain.get_current_block()) == 1
 
 
 def test_add_transaction_no_rolloever(chain):
