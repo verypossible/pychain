@@ -37,8 +37,13 @@ def test_hash_generated(block):
     block.add_transaction('abc')
     block.add_transaction({'name': 'bz', 'age': 44})
     assert not block.hash
+    # hack for testing
+    block.timestamp = 1508802926422
+    block.nonce = 461
     block.close()
-    expected = 'f5fed7aed4098648431dd1e3f988c501ef626542d12bcd5aefd66d71e39231b9'
+    print()
+    print(block.nonce)
+    expected = '00155abf1f2df1e62682a4f2170c7d33dfcb1f0864d97db6dc4feddd6dcea580'
     assert block.hash == expected
 
 

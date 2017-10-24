@@ -15,6 +15,7 @@ class Block:
         self.index = index
         self.prev_hash = prev_hash
         self.timestamp = timestamp
+        self.nonce = 0
         self.__transactions = []
         self.__is_closed = False
         self.hash = None
@@ -23,10 +24,19 @@ class Block:
         return len(self.__transactions)
 
     def generate_hash(self):
-        transaction_hashes = [t.generate_hash() for t in self.__transactions]
-        # Critical component is to add the previous hash as part of the data to create this blocks
-        # hash.  Without this, the block's hash isn't secure in any way.
-        return generate_hash([self.prev_hash] + transaction_hashes)
+        nonce = self.nonce
+        timestamp = self.timestamp
+
+        _hash = ''
+        while not _hash.startswith('00'):
+            nonce += 1
+            hash_data = [self.index, self.prev_hash, timestamp] + \
+                        [t.generate_hash() for t in self.__transactions] + \
+                        [nonce]
+            _hash = generate_hash(*hash_data)
+
+        self.nonce = nonce
+        return _hash
 
     def add_transaction(self, transaction):
         if self.__is_closed:
