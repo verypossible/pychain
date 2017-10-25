@@ -7,5 +7,4 @@ def mine(header):
         if int(hash_result, 16) < header.target:
             return (nonce, hash_result)
 
-    print('Failed after %d (max_nonce) tries' % nonce)
     return (None, None)

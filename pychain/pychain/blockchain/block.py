@@ -24,7 +24,7 @@ class Block:
         hash_result = self.header.generate_hash(nonce=self.header.nonce)
 
         if hash_result != self.__pow_hash:
-            raise BlockError('Invalid header hash')
+            raise BlockError('Invalid POW hash')
 
         if int(hash_result, 16) >= self.header.target:
             raise BlockError('POW target greater than expected target')
@@ -40,11 +40,16 @@ class Block:
     def as_dict(self):
         return {
                 'index': self.index,
-                'prev_hash': self.prev_hash,
-                'timestamp': self.timestamp,
-                'transactions': [t._data for t in self.__transactions],
-                'hash': self.hash,
-                'is_closed': self.is_closed(),
+                'transactions': [(t.generate_hash(), t._data) for t in self.__transactions],
+                'pow_hash': self.__pow_hash,
+                'header': {
+                    'prev_hash': self.header.prev_hash,
+                    'merkle_root': self.header.merkle_root,
+                    'timestamp': self.header.timestamp,
+                    'target': self.header.target,
+                    'version': self.header.version,
+                    'nonce': self.header.nonce,
+                }
         }
 
 

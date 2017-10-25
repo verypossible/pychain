@@ -15,12 +15,24 @@ class BlockHeader:
         self.nonce = nonce
 
     @property
-    def target(self):
-        return self.__target
+    def prev_hash(self):
+        return self.__prev_hash
 
     @property
     def merkle_root(self):
         return self.__merkle_root
+
+    @property
+    def timestamp(self):
+        return self.__timestamp
+
+    @property
+    def target(self):
+        return self.__target
+
+    @property
+    def version(self):
+        return self.__version
 
     def generate_hash(self, *, nonce):
         return generate_hash(
