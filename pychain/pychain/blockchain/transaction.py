@@ -22,3 +22,7 @@ class Transaction:
 
     def generate_hash(self):
         return generate_hash(self._data)
+
+    @staticmethod
+    def generate_hash_for_transactions(transactions):
+        return generate_hash(*[t.generate_hash() for t in transactions])

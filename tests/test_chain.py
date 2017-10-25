@@ -21,7 +21,7 @@ def test_chain_inits_single_transaction(chain):
     assert len(chain.get_current_block()) == 1
 
 
-def test_add_transaction_no_rolloever(chain):
+def test_add_transaction_no_rollover(chain):
     for i in range(1, 6):
         chain.add_transaction('a' * i)
 
@@ -29,7 +29,7 @@ def test_add_transaction_no_rolloever(chain):
     assert len(chain.get_current_block()) == 5
 
 
-def test_add_transaction_rolloever(chain):
+def test_add_transaction_rollover(chain):
     for i in range(1, 7):
         chain.add_transaction('a' * i)
 

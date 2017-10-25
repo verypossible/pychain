@@ -2,5 +2,5 @@ import time
 
 
 def get_timestamp():
-    """Return epoch time in milliseconds"""
-    return int(time.time() * 1000)
+    """Return epoch time in seconds"""
+    return int(time.time())

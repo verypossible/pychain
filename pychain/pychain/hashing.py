@@ -1,5 +1,4 @@
 import hashlib
-import json
 
 
 def generate_hash(*data):

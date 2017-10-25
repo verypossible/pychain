@@ -11,51 +11,31 @@ class Block:
 
     BLOCK_SIZE = 5
 
-    def __init__(self, *, index, prev_hash, timestamp):
+    def __init__(self, *, index, header, transactions, pow_hash):
         self.index = index
-        self.prev_hash = prev_hash
-        self.timestamp = timestamp
-        self.nonce = 0
-        self.__transactions = []
-        self.__is_closed = False
-        self.hash = None
+        self.header = header
+        self.__transactions = transactions
+        self.__pow_hash = pow_hash
 
     def __len__(self):
         return len(self.__transactions)
 
-    def generate_hash(self):
-        nonce = self.nonce
-        timestamp = self.timestamp
+    def check_block_header(self):
+        hash_result = self.header.generate_hash(nonce=self.header.nonce)
 
-        _hash = ''
-        while not _hash.startswith('00'):
-            nonce += 1
-            hash_data = [self.index, self.prev_hash, timestamp] + \
-                        [t.generate_hash() for t in self.__transactions] + \
-                        [nonce]
-            _hash = generate_hash(*hash_data)
+        if hash_result != self.__pow_hash:
+            raise BlockError('Invalid header hash')
 
-        self.nonce = nonce
-        return _hash
+        if int(hash_result, 16) >= self.header.target:
+            raise BlockError('POW target greater than expected target')
 
-    def add_transaction(self, transaction):
-        if self.__is_closed:
-            raise BlockError('Cannot add to closed block')
+    def check_block(self):
+        if len(self.__transactions) < 1:
+            raise BlockError('Empty transactions list')
 
-        if not isinstance(transaction, Transaction):
-            transaction = Transaction(transaction)
-
-        self.__transactions.append(transaction)
-        if len(self.__transactions) >= self.BLOCK_SIZE:
-            self.close()
-
-    def close(self):
-        # Close off this block, no more writing
-        self.hash = self.generate_hash()
-        self.__is_closed = True
-
-    def is_closed(self):
-        return self.__is_closed
+        transactions_hash = Transaction.generate_hash_for_transactions(self.__transactions)
+        if transactions_hash != self.header.merkle_root:
+            raise BlockError('Invalid merkle_root hash')
 
     def as_dict(self):
         return {
@@ -66,17 +46,6 @@ class Block:
                 'hash': self.hash,
                 'is_closed': self.is_closed(),
         }
-
-    @staticmethod
-    def validate_block(prev_block, new_block):
-        if previous_block.index + 1 != new_block.index:
-            raise BlockError('invalid index')
-
-        if previous_block.hash != new_block.prev_hash:
-            raise BlockError('invalid previoushash');
-
-        return True
-
 
 
 #
@@ -93,20 +62,20 @@ class Block:
 #
 
 
-def get_latest_block(as_dict=False):
-    item = r.lrange(LIST, -1, -1)[0]
-    block = pickle.loads(item)
-    if as_dict:
-        block = block.as_dict()
-    return block
-
-
-def get_genesis_block():
-    return r.get('GENESIS') == _GENSIS_BLOCK.hash
-
-
-def generate_next_block(block_data, previous_block=None):
-    previous_block = previous_block or get_latest_block()
-    next_index = previous_block.index + 1
-    next_timestamp = get_timestamp()
-    return Block(next_index, previous_block.hash, next_timestamp, block_data)
+# def get_latest_block(as_dict=False):
+#     item = r.lrange(LIST, -1, -1)[0]
+#     block = pickle.loads(item)
+#     if as_dict:
+#         block = block.as_dict()
+#     return block
+#
+#
+# def get_genesis_block():
+#     return r.get('GENESIS') == _GENSIS_BLOCK.hash
+#
+#
+# def generate_next_block(block_data, previous_block=None):
+#     previous_block = previous_block or get_latest_block()
+#     next_index = previous_block.index + 1
+#     next_timestamp = get_timestamp()
+#     return Block(next_index, previous_block.hash, next_timestamp, block_data)
