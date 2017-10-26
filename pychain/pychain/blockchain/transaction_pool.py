@@ -7,6 +7,7 @@ __transactions = []
 
 
 def add_transaction(transaction):
+    global __transactions
     if not isinstance(transaction, Transaction):
         transaction = Transaction(transaction)
 

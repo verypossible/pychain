@@ -4,6 +4,7 @@ import json
 from flask import Flask, jsonify, request
 
 from pychain.blockchain import Chain
+from pychain.blockchain.block import BlockError
 from pychain.blockchain.transaction_pool import add_transaction
 
 from pprint import pprint as pp
@@ -15,7 +16,7 @@ app = Flask(__name__)
 def index():
     #count = r.llen(LIST) or 0
     return jsonify({
-        'number_of_items': len(Chain),
+        'num_blocks': len(Chain),
         'latest_block': Chain.get_last_block().as_dict()
     })
 
@@ -23,16 +24,17 @@ def index():
 @app.route('/add', methods=['POST'])
 def add_block():
     payload = request.get_json() or request.get_data().decode('utf-8')
-    pp(payload)
-    return jsonify(payload)
-    #try:
-    # Chain.add_transaction(payload)
-    # block = Chain.get_last_block()
-    # return jsonify(block.as_dict())
-    # # except BlockException as e:
-    #     return jsonify({'errors': str(e)})
-    #
+    # pp(payload)
+    # return jsonify(payload)
+    try:
+        add_transaction(payload)
+    except BlockError as e:
+        return jsonify({'errors': str(e)})
 
+    return jsonify({
+            'msg': 'Transaction adding to transaction pool.',
+            'success': True,
+    })
 
 
 

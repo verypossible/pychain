@@ -1,6 +1,5 @@
 from .block import Block
 from .block_header import BlockHeader
-from .block_header import BlockHeader
 from .constants import TARGET
 from .genesis import get_genesis_block
 from .miner import mine
@@ -39,28 +38,47 @@ class _Chain:
 
     def _get_new_block_header(self, block, transactions):
         # This is not really a merkle root.  Instead, simply hash all of the hashes for each
-        # transation
+        # transaction
         fake_merkle_root = Transaction.generate_hash_for_transactions(transactions)
         return BlockHeader(
                 prev_hash=block.hash,
                 merkle_root=fake_merkle_root,
+                timestamp=get_timestamp(),
                 target=TARGET,
         )
 
     def _create_candidate_header(self, transactions, last_block=None):
         last_block = last_block or self.get_last_block()
         header = self._get_new_block_header(last_block, transactions)
+        self._send_to_miners(transactions, header)
 
-        nonce, valid_hash = mine(header)
-        if nonce is None or valid_hash is None:
-            return (False, header, None)
+    def _send_to_miners(self, transactions, header):
+        import urllib.request
+        r = urllib.request.Request(
+                'http://miner:5001/mine',
+                data=header.to_json(),
+                headers={'Content-Type': 'application/json'},
+                method='POST',
+        )
+        response = urllib.request.urlopen(r)
+        print(json.loads(resp.read()))
 
-        header.nonce = nonce
-        return (True, header, valid_hash)
+        # nonce, valid_hash = mine(header)
+        # if nonce is None or valid_hash is None:
+        #     return (False, header, None)
+        #
+        # header.nonce = nonce
+        # return (True, header, valid_hash)
+        #
+    def add_block(self, block):
+        self.__blockchain.append(block)
 
     def create_candidate_block(self, transactions):
+        print("Creating candidate block!")
         last_block = self.get_last_block()
+        # note, this does the mining
         success, header, valid_hash = self._create_candidate_header(transactions, last_block)
+        print(success, header, valid_hash)
         if not success:
             return None
 
@@ -72,6 +90,12 @@ class _Chain:
         )
         block.check_block_header()
         block.check_block()
+
+        is_valid = self.is_valid_new_block(last_block, block)
+        print('Found a new block, is it valid???', is_valid)
+        if is_valid:
+            self.add_block(block)
+
         return block
 
     def get_last_block(self):
@@ -83,9 +107,11 @@ class _Chain:
             return True
 
         if prev_block.index + 1 != new_block.index:
+            print('Unexpected block index!')
             return False
 
-        if prev_block.hash != new_block.prev_hash:
+        if prev_block.hash != new_block.header.prev_hash:
+            print('Mismatch block hashes!')
             return False
 
         # if prev_block.hash != hash(prev_block):

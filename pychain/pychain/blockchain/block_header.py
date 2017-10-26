@@ -1,3 +1,5 @@
+import json
+
 from .constants import TARGET
 
 from ..hashing import generate_hash
@@ -14,6 +16,11 @@ class BlockHeader:
         self.__target = target
         self.__version = version
         self.nonce = nonce
+
+    @staticmethod
+    def from_json(payload):
+        payload = json.loads(payload)
+        return BlockHeader(**payload)
 
     @property
     def prev_hash(self):
@@ -34,6 +41,19 @@ class BlockHeader:
     @property
     def version(self):
         return self.__version
+
+    def to_primitive(self):
+        return {
+            'prev_hash': self.prev_hash,
+            'merkle_root': self.merkle_root,
+            'timestamp': self.timestamp,
+            'target': self.target,
+            'version': self.version,
+            'nonce': self.nonce,
+        }
+
+    def to_json(self):
+        return json.dumps(to_primitive)
 
     def generate_hash(self, *, nonce):
         return generate_hash(
