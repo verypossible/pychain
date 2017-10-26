@@ -1,14 +1,15 @@
 from .constants import TARGET
 
 from ..hashing import generate_hash
+from ..helpers import get_timestamp
 
 
 class BlockHeader:
 
-    def __init__(self, *, prev_hash, merkle_root, timestamp, target=TARGET, nonce=0, version=1):
+    def __init__(self, *, prev_hash, merkle_root, timestamp=None, target=TARGET, nonce=0, version=1):
         self.__prev_hash = prev_hash
         self.__merkle_root = merkle_root
-        self.__timestamp = timestamp
+        self.__timestamp = timestamp or get_timestamp()
         # this is difficulty
         self.__target = target
         self.__version = version

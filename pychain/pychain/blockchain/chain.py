@@ -44,7 +44,6 @@ class _Chain:
         return BlockHeader(
                 prev_hash=block.hash,
                 merkle_root=fake_merkle_root,
-                timestamp=get_timestamp(),
                 target=TARGET,
         )
 
