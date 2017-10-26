@@ -4,6 +4,9 @@ from pychain.blockchain.block import (
         Block,
         BlockError,
 )
+from pychain.blockchain.genesis import (
+        GENESIS_POW_HASH,
+)
 from pychain.blockchain.block_header import BlockHeader
 from pychain.blockchain.transaction import Transaction
 
@@ -11,7 +14,7 @@ from pychain.blockchain.transaction import Transaction
 @pytest.fixture()
 def block():
     h = BlockHeader(
-            prev_hash='0000f8b59e9c39b9bdb63793b6a085b465d2ae9a4e3c54759f46f17948eeff7f',
+            prev_hash=GENESIS_POW_HASH,
             merkle_root='2bce0bad29c5575d6e66afc4eb0dff545f8d751f4680d9ef6557345e60fcc141',
             timestamp=1508907362)
     return Block(
@@ -87,7 +90,7 @@ def test_as_dict(block):
     header = {
         'merkle_root': '2bce0bad29c5575d6e66afc4eb0dff545f8d751f4680d9ef6557345e60fcc141',
         'nonce': 0,
-        'prev_hash': '0000f8b59e9c39b9bdb63793b6a085b465d2ae9a4e3c54759f46f17948eeff7f',
+        'prev_hash': GENESIS_POW_HASH,
         'target': 115792089237316195423570985008687907853269984665640564039457584007913129639936,
         'timestamp': 1508907362,
         'version': 1,

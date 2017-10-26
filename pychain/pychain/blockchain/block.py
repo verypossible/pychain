@@ -9,8 +9,6 @@ class BlockError(Exception):
 
 class Block:
 
-    BLOCK_SIZE = 5
-
     def __init__(self, *, index, header, transactions, pow_hash):
         self.index = index
         self.header = header
@@ -19,6 +17,10 @@ class Block:
 
     def __len__(self):
         return len(self.__transactions)
+
+    @property
+    def hash(self):
+        return self.__pow_hash
 
     def check_block_header(self):
         hash_result = self.header.generate_hash(nonce=self.header.nonce)

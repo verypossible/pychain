@@ -2,6 +2,7 @@ from .block import Block
 from .block_header import BlockHeader
 from .block_header import BlockHeader
 from .constants import TARGET
+from .genesis import get_genesis_block
 from .miner import mine
 from .transaction import Transaction
 
@@ -9,28 +10,19 @@ from ..hashing import generate_hash
 from ..helpers import get_timestamp
 
 
-# dumb singleton
+# Dumb singleton
+#
+# NOTE!  Initialization of this singleton is done at the bottom of this file
+#
 Chain = None
-
-
-def get_genesis_block():
-    h = BlockHeader(
-            prev_hash='0',
-            merkle_root='2f2d7ab3523283b62fe9e1ed89a64247a19a2abb8d80dd22e96a8784d0707d5e',
-            timestamp=1508907362,
-            target=2 ** (256 - 16),
-            nonce=151809,
-    )
-    t = Transaction('Genesis')
-    pow_hash = '0000f8b59e9c39b9bdb63793b6a085b465d2ae9a4e3c54759f46f17948eeff7f'
-    return Block(index=0, header=h, transactions=[t], pow_hash=pow_hash)
 
 
 class _Chain:
 
     def __init__(self):
         self.__blockchain = []
-        self.__entries = []
+        self.__forks = []
+        self.__orphans = []
 
     def __len__(self):
         return len(self.__blockchain)
@@ -56,7 +48,8 @@ class _Chain:
                 target=TARGET,
         )
 
-    def _create_candidate_header(self, transactions, last_block):
+    def _create_candidate_header(self, transactions, last_block=None):
+        last_block = last_block or self.get_last_block()
         header = self._get_new_block_header(last_block, transactions)
 
         nonce, valid_hash = mine(header)
@@ -75,12 +68,12 @@ class _Chain:
         block = Block(
                     index=last_block.index + 1,
                     header=header,
-                    transaction=transactions,
+                    transactions=transactions,
                     pow_hash=valid_hash,
         )
         block.check_block_header()
         block.check_block()
-
+        return block
 
     def get_last_block(self):
         return self.__blockchain[-1]
@@ -105,4 +98,3 @@ class _Chain:
 # Dumb initialization
 if Chain is None:
     Chain = _Chain()
-    #Chain._init_genesis_block()
