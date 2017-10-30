@@ -3,7 +3,7 @@ import os
 BLOCK_SIZE = int(os.environ.get('PYCHAIN_BLOCK_SIZE', 5))
 
 DIFFICULTY_BITS = int(os.environ.get('PYCHAIN_DIFFICULTY_BITS', 2))
-#DIFFICULTY_BITS = int(os.environ.get('PYCHAIN_DIFFICULTY_BITS', 18))
+DIFFICULTY_BITS = int(os.environ.get('PYCHAIN_DIFFICULTY_BITS', 14))
 TARGET = 2 ** (256 - DIFFICULTY_BITS)
 
 #MAX_TARGET = 2 ** 256

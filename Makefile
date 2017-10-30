@@ -6,11 +6,15 @@ all :
 
 
 shell :
-	docker-compose run --service-ports app bash
+	docker-compose run --rm --service-ports app bash
+
+
+app :
+	docker-compose run --rm --service-ports app python pychain/app.py
 
 
 miner :
-	docker-compose run -d --service-ports miner
+	docker-compose run -d --rm --service-ports miner
 
 
 redis :

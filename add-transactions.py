@@ -1,5 +1,5 @@
 import json
-import urllib.request
+import requests
 
 URL = 'http://localhost:5000/add'
 
@@ -21,13 +21,10 @@ def create_fake_obj():
 
 data_array = [create_fake_obj() for i in range(21)]
 
-for obj in data_array[:5]:
-    r = urllib.request.Request(
-            URL,
-            data=json.dumps(obj).encode('utf-8'),
-            headers={'Content-Type': 'application/json'},
-            method='POST',
-    )
-    resp = urllib.request.urlopen(r)
-    print(json.loads(resp.read()))
-
+for obj in data_array[:11]:
+    resp = requests.post(URL, json=obj)
+    #import pdb; pdb.set_trace()
+    if resp.status_code == 200:
+        print(resp.json())
+    else:
+        print(resp.text)

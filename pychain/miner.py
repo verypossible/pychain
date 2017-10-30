@@ -15,10 +15,18 @@ def mine_new_block():
 
     try:
         header = payload['header']
-        pp(header)
         transactions = payload['transactions']
         header = BlockHeader(**header)
         nonce, valid_hash = mine(header)
+    except KeyError as e:
+        msg = 'Missing key: %s' % (e, )
+        return jsonify({
+            'success': False,
+            'msg': msg,
+            'header': None,
+            'valid_hash': '',
+            'transactions': None,
+        })
     except Exception as e:
         return jsonify({
             'success': False,
