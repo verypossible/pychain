@@ -23,6 +23,12 @@ class Transaction:
     def generate_hash(self):
         return generate_hash(self._data)
 
+    def to_primitive(self):
+        return {
+            'data': self._data,
+            'hash': self.generate_hash(),
+        }
+
     @staticmethod
     def generate_hash_for_transactions(transactions):
         return generate_hash(*[t.generate_hash() for t in transactions])

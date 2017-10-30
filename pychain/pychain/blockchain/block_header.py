@@ -53,7 +53,7 @@ class BlockHeader:
         }
 
     def to_json(self):
-        return json.dumps(to_primitive)
+        return json.dumps(self.to_primitive())
 
     def generate_hash(self, *, nonce):
         return generate_hash(

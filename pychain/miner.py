@@ -14,12 +14,18 @@ def mine_new_block():
     payload = request.get_json() or request.get_data().decode('utf-8')
 
     try:
-        header = BlockHeader(**payload)
+        header = payload['header']
+        pp(header)
+        transactions = payload['transactions']
+        header = BlockHeader(**header)
         nonce, valid_hash = mine(header)
     except Exception as e:
         return jsonify({
             'success': False,
             'msg': str(e),
+            'header': None,
+            'valid_hash': '',
+            'transactions': None,
         })
 
     if nonce is None or valid_hash is None:
@@ -27,13 +33,13 @@ def mine_new_block():
     else:
         success = True
         header.nonce = nonce
-    #return (True, header, valid_hash)
 
     return jsonify({
-            'msg': 'Mining complete',
             'success': True,
+            'msg': 'Mining complete',
             'header': header.to_primitive(),
             'valid_hash': valid_hash,
+            'transactions': transactions,
     })
 
 

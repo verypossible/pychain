@@ -21,7 +21,7 @@ def create_fake_obj():
 
 data_array = [create_fake_obj() for i in range(21)]
 
-for obj in data_array:
+for obj in data_array[:5]:
     r = urllib.request.Request(
             URL,
             data=json.dumps(obj).encode('utf-8'),

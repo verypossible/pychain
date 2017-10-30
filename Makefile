@@ -9,6 +9,10 @@ shell :
 	docker-compose run --service-ports app bash
 
 
+miner :
+	docker-compose run -d --service-ports miner
+
+
 redis :
 	docker-compose run -d redis
 

@@ -1,8 +1,10 @@
+import json
+import requests
+
 from .block import Block
 from .block_header import BlockHeader
 from .constants import TARGET
 from .genesis import get_genesis_block
-from .miner import mine
 from .transaction import Transaction
 
 from ..hashing import generate_hash
@@ -53,23 +55,22 @@ class _Chain:
         self._send_to_miners(transactions, header)
 
     def _send_to_miners(self, transactions, header):
-        import urllib.request
-        r = urllib.request.Request(
+        response = requests.post(
                 'http://miner:5001/mine',
-                data=header.to_json(),
+                json={
+                    'transactions': [t.to_primitive() for t in transactions],
+                    'header': header.to_primitive(),
+                },
                 headers={'Content-Type': 'application/json'},
-                method='POST',
         )
-        response = urllib.request.urlopen(r)
-        print(json.loads(resp.read()))
+        payload = response.json()
+        if not payload.get('success', False):
+            print('error mining')
+            return
 
-        # nonce, valid_hash = mine(header)
-        # if nonce is None or valid_hash is None:
-        #     return (False, header, None)
-        #
-        # header.nonce = nonce
-        # return (True, header, valid_hash)
-        #
+        assert header == response['header']
+
+
     def add_block(self, block):
         self.__blockchain.append(block)
 
@@ -77,6 +78,9 @@ class _Chain:
         print("Creating candidate block!")
         last_block = self.get_last_block()
         # note, this does the mining
+        self._create_candidate_header(transactions, last_block)
+
+    def add_new_block(self, block):
         success, header, valid_hash = self._create_candidate_header(transactions, last_block)
         print(success, header, valid_hash)
         if not success:

@@ -1,7 +1,4 @@
-FROM python:3
-
-RUN mkdir /code
-WORKDIR /code
+FROM verypossible/serverless:1.23-python3
 
 RUN pip install pipenv
 
