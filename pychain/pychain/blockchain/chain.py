@@ -38,6 +38,56 @@ class _Chain:
             genesis_block.check_block()
             self.__blockchain.append(genesis_block)
 
+    def add_block(self, block):
+        self.__blockchain.append(block)
+
+    def _send_to_miners_no(self, transactions, header, last_block):
+        response = requests.post(
+                'http://miner:5001/mine',
+                json={
+                    'transactions': [t.to_primitive() for t in transactions],
+                    'header': header.to_primitive(),
+                },
+                headers={'Content-Type': 'application/json'},
+        )
+        payload = response.json()
+        if not payload.get('success', False):
+            print('error mining')
+            return
+
+        json_response = response.json()
+        # this is the new header, with the nonce from the mining
+        mined_header = BlockHeader(**json_response['header'])
+
+        # linking looks good
+        assert mined_header.prev_hash == last_block.hash
+
+        from  pprint import pprint as pp
+        import sys
+        sys.stdout = sys.stderr
+        pp(json_response)
+
+        # Validate that the nonce returned from the miner creates a valid block
+        assert mined_header.generate_hash(nonce=mined_header.nonce) == json_response['valid_hash']
+        print('Mining completed successfully!')
+
+
+    def _send_to_miners(self, transactions, last_block):
+        arn = 'arn:aws:sns:us-east-1:679892560156:PyChainMiners'
+
+        payload = {
+            'transactions': [t.to_primitive() for t in transactions],
+            'last_block': last_block.to_primitive(),
+        },
+
+        import boto3
+        client = boto3.client('sns')
+        client.publish(
+                TopicArn=arn,
+                Message=json.dumps({'default': json.dumps(payload)}),
+                MessageStructure='json',
+        )
+
     def _get_new_block_header(self, block, transactions):
         # This is not really a merkle root.  Instead, simply hash all of the hashes for each
         # transaction
@@ -51,52 +101,14 @@ class _Chain:
 
     def _create_candidate_header(self, transactions, last_block=None):
         last_block = last_block or self.get_last_block()
-        header = self._get_new_block_header(last_block, transactions)
-        self._send_to_miners(transactions, header, last_block)
-
-    def _send_to_miners(self, transactions, header, last_block):
-        response = requests.post(
-                'http://miner:5001/mine',
-                json={
-                    'transactions': [t.to_primitive() for t in transactions],
-                    'header': header.to_primitive(),
-                },
-                headers={'Content-Type': 'application/json'},
-        )
-        print('Sent to miners')
-        return
-        payload = response.json()
-        if not payload.get('success', False):
-            print('error mining')
-            return
-
-        json_response = response.json()
-        # this is the new header, with the nonce from the mining
-        mined_header = BlockHeader(**json_response['header'])
-
-        # linking looks good
-        assert mined_header.prev_hash == last_block.hash
-
-        #assert header == json_response['header']
-
-        from  pprint import pprint as pp
-        import sys
-        sys.stdout = sys.stderr
-        pp(json_response)
-
-        # Validate that the nonce returned from the miner creates a valid block
-        assert mined_header.generate_hash(nonce=mined_header.nonce) == json_response['valid_hash']
-        print('Mining completed successfully!')
-
-
-    def add_block(self, block):
-        self.__blockchain.append(block)
+        return self._get_new_block_header(last_block, transactions)
 
     def create_candidate_block(self, transactions):
         print("Creating candidate block!")
         last_block = self.get_last_block()
-        # note, this does the mining
-        self._create_candidate_header(transactions, last_block)
+        # create a candidate block and send it to miners
+        #header = self._create_candidate_header(transactions, last_block)
+        self._send_to_miners(transactions, last_block)
 
     def add_new_block(self, block):
         success, header, valid_hash = self._create_candidate_header(transactions, last_block)

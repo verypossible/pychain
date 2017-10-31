@@ -39,7 +39,7 @@ class Block:
         if transactions_hash != self.header.merkle_root:
             raise BlockError('Invalid merkle_root hash')
 
-    def as_dict(self):
+    def to_primitive(self):
         return {
                 'index': self.index,
                 'transactions': [(t.generate_hash(), t._data) for t in self.__transactions],
