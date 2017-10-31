@@ -63,6 +63,8 @@ class _Chain:
                 },
                 headers={'Content-Type': 'application/json'},
         )
+        print('Sent to miners')
+        return
         payload = response.json()
         if not payload.get('success', False):
             print('error mining')

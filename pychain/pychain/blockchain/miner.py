@@ -11,6 +11,7 @@ class MiningTimeout(Exception):
 
 
 def mine(header, timeout=MAX_MINING_TIME):
+    print("Miner commencing")
     start_time = time.time()
     counter = 0
 

@@ -1,0 +1,32 @@
+service: pychain
+
+frameworkVersion: "=1.23.0"
+
+provider:
+  name: aws
+  runtime: python3.6
+  memorySize: 128
+  region: ${env:AWS_REGION}
+  timeout: 15
+  # environment:
+  #   PYCHAIN_DIFFICULTY_BITS: "18"
+  #   PYCHAIN_MAX_MINING_TIME: "15"
+
+
+package:
+  exclude:
+    - "**/*.pyc"
+    - "**/*.swp"
+    - "**/__pycache__"
+    - ".git/**"
+
+
+functions:
+  Mine:
+    handler: handler.sns_mine
+    events:
+      - sns: PyChainMiners
+  WebMine:
+    handler: handler.web_mine
+    events:
+      - http: POST /
