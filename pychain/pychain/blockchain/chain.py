@@ -1,3 +1,4 @@
+import boto3
 import json
 import requests
 
@@ -9,6 +10,9 @@ from .transaction import Transaction
 
 from ..hashing import generate_hash
 from ..helpers import get_timestamp
+from ..persistence import RedisChain
+
+from  pprint import pprint as pp
 
 
 # Dumb singleton
@@ -24,53 +28,29 @@ class _Chain:
         self.__blockchain = []
         self.__forks = []
         self.__orphans = []
+        self.__db = RedisChain()
 
     def __len__(self):
-        return len(self.__blockchain)
+        return self.__db.get_chain_length()
 
     def __iter__(self):
         return iter(self.__blockchain)
 
     def _init_genesis_block(self):
-        if not self.__blockchain:
+        if len(self) < 1:
             genesis_block = get_genesis_block()
             genesis_block.check_block_header()
             genesis_block.check_block()
-            self.__blockchain.append(genesis_block)
+            self.add_block(genesis_block)
+
+    def _reset(self):
+        print('Clearing chain')
+        print(self.__db.clear_chain())
+        print('Chain cleared')
+        self._init_genesis_block()
 
     def add_block(self, block):
-        self.__blockchain.append(block)
-
-    def _send_to_miners_no(self, transactions, header, last_block):
-        response = requests.post(
-                'http://miner:5001/mine',
-                json={
-                    'transactions': [t.to_primitive() for t in transactions],
-                    'header': header.to_primitive(),
-                },
-                headers={'Content-Type': 'application/json'},
-        )
-        payload = response.json()
-        if not payload.get('success', False):
-            print('error mining')
-            return
-
-        json_response = response.json()
-        # this is the new header, with the nonce from the mining
-        mined_header = BlockHeader(**json_response['header'])
-
-        # linking looks good
-        assert mined_header.prev_hash == last_block.hash
-
-        from  pprint import pprint as pp
-        import sys
-        sys.stdout = sys.stderr
-        pp(json_response)
-
-        # Validate that the nonce returned from the miner creates a valid block
-        assert mined_header.generate_hash(nonce=mined_header.nonce) == json_response['valid_hash']
-        print('Mining completed successfully!')
-
+        self.__db.add_block_to_chain(block)
 
     def _send_to_miners(self, transactions, last_block):
         arn = 'arn:aws:sns:us-east-1:679892560156:PyChainMiners'
@@ -80,7 +60,6 @@ class _Chain:
             'last_block': last_block.to_primitive(),
         },
 
-        import boto3
         client = boto3.client('sns')
         client.publish(
                 TopicArn=arn,
@@ -103,48 +82,34 @@ class _Chain:
         last_block = last_block or self.get_last_block()
         return self._get_new_block_header(last_block, transactions)
 
+    def get_last_block(self):
+        return self.__db.get_block_at(-1)
+
     def create_candidate_block(self, transactions):
         print("Creating candidate block!")
         last_block = self.get_last_block()
-        # create a candidate block and send it to miners
-        #header = self._create_candidate_header(transactions, last_block)
         self._send_to_miners(transactions, last_block)
 
     def add_new_block(self, block):
-        success, header, valid_hash = self._create_candidate_header(transactions, last_block)
-        print(success, header, valid_hash)
-        if not success:
+        if not self.validate_block(block):
             return None
 
-        block = Block(
-                    index=last_block.index + 1,
-                    header=header,
-                    transactions=transactions,
-                    pow_hash=valid_hash,
-        )
+        print('Adding new valid block to chain')
+        self.add_block(block)
+        return True
+
+    def validate_block(self, block):
+        # Validate this block is consistent
         block.check_block_header()
         block.check_block()
 
-        is_valid = self.is_valid_new_block(last_block, block)
-        print('Found a new block, is it valid???', is_valid)
-        if is_valid:
-            self.add_block(block)
+        # valiate the chain
+        prev_block = self.get_last_block()
 
-        return block
-
-    def get_last_block(self):
-        return self.__blockchain[-1]
-
-    def is_valid_new_block(self, prev_block, new_block):
-        # If the blockhain is empty, the first entry is defined to be valid
-        if not self.__blockchain:
-            return True
-
-        if prev_block.index + 1 != new_block.index:
+        if prev_block.index + 1 != block.index:
             print('Unexpected block index!')
             return False
-
-        if prev_block.hash != new_block.header.prev_hash:
+        if prev_block.hash != block.header.prev_hash:
             print('Mismatch block hashes!')
             return False
 
@@ -157,3 +122,4 @@ class _Chain:
 # Dumb initialization
 if Chain is None:
     Chain = _Chain()
+    #Chain._init_genesis_block()

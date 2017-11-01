@@ -65,8 +65,6 @@ class Block:
 #     result = r.set('GENESIS', _GENSIS_BLOCK.hash)
 #     was_added = add_block_to_redis(_GENSIS_BLOCK)
 #     return result
-#
-#
 
 
 # def get_latest_block(as_dict=False):

@@ -8,6 +8,7 @@ run = docker run --rm -it \
         -v `pwd`:/code \
         --env ENV=$(ENV) \
         --env-file envs/$2 \
+		--link pychain-redis-$(ENV):redis \
         --name=pychain-serverless-$(ENV) $(NAME) $1
 
 
@@ -69,9 +70,13 @@ app :
 # 	docker-compose run -d --rm --service-ports miner
 #
 #
-# redis :
-# 	docker-compose run -d redis
-#
+redis :
+	docker run -d --rm \
+		-v /Users/brianz/work/pychain/redis-data:/data \
+		-p "6379:6379" \
+        --name=pychain-redis-$(ENV) \
+		redis:alpine
+
 #
 # redis-cli:
 # 	docker-compose exec redis redis-cli
@@ -81,5 +86,4 @@ check-env:
 ifndef ENV
     $(error ENV is undefined)
 endif
-
 

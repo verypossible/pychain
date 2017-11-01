@@ -1,6 +1,6 @@
 service: pychain
 
-frameworkVersion: "=1.23.0"
+frameworkVersion: ">=1.20.0"
 
 provider:
   name: aws
@@ -8,10 +8,27 @@ provider:
   memorySize: 128
   region: ${env:AWS_REGION}
   timeout: 15
-  # environment:
-  #   PYCHAIN_DIFFICULTY_BITS: "18"
-  #   PYCHAIN_MAX_MINING_TIME: "15"
-
+  vpc:
+    securityGroupIds:
+      - Fn::GetAtt: ServerlessSecurityGroup.GroupId
+    subnetIds:
+      - ${env:SUBNET_ID_A}
+      - ${env:SUBNET_ID_B}
+      - ${env:SUBNET_ID_C}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "ec2:CreateNetworkInterface"
+        - "ec2:DescribeNetworkInterfaces"
+        - "ec2:DeleteNetworkInterface"
+      Resource: "*"
+  environment:
+    # PYCHAIN_DIFFICULTY_BITS: "18"
+    # PYCHAIN_MAX_MINING_TIME: "15"
+    PYCHAIN_REDIS_HOST:
+      Fn::GetAtt:
+        - ElasticacheNode
+        - RedisEndpoint.Address
 
 package:
   exclude:
@@ -20,8 +37,48 @@ package:
     - "**/__pycache__"
     - ".git/**"
 
+# - Fn::GetAtt:
+#     - ElasticacheSecurityGroup
+#     - GroupId
+
+resources:
+  Resources:
+    ElasticacheNode:
+      Type: AWS::ElastiCache::CacheCluster
+      Properties:
+        CacheNodeType: cache.t2.micro
+        ClusterName: ${env:ENV}RedisBlockchain
+        Engine: redis
+        EngineVersion: 3.2.6
+        NumCacheNodes: 1
+        VpcSecurityGroupIds:
+          - Fn::GetAtt: ElasticacheSecurityGroup.GroupId
+    ServerlessSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: SecurityGroup for Serverless Functions
+        VpcId: ${env:VPC_ID}
+    ElasticacheSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Elasticache Security Group
+        VpcId: ${env:VPC_ID}
+        SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: "6379"
+          ToPort: "6379"
+          SourceSecurityGroupId:
+            Fn::GetAtt: ServerlessSecurityGroup.GroupId
 
 functions:
+  Index:
+    handler: handler.index
+    events:
+      - http: GET /
+  AddTransaction:
+    handler: handler.add_transaction
+    events:
+      - http: POST /
   Mine:
     handler: handler.sns_mine
     events:
@@ -29,4 +86,4 @@ functions:
   WebMine:
     handler: handler.web_mine
     events:
-      - http: POST /
+      - http: POST /mine

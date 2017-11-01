@@ -7,87 +7,87 @@ from pathlib import Path
 CWD = Path(__file__).resolve().cwd() / 'lib'
 sys.path.insert(0, str(CWD))
 
-
-from pychain.blockchain.miner import mine
-from pychain.blockchain.block_header import BlockHeader
-from pychain.blockchain.transaction import Transaction
-from pychain.blockchain.constants import TARGET
-from pychain.helpers import get_timestamp
+from pychain.handlers import (
+        handle_mining,
+        handle_index,
+)
 
 
-def _get_new_block_header(last_block, transactions):
-    # This is not really a merkle root.  Instead, simply hash all of the hashes for each
-    # transaction
-    fake_merkle_root = Transaction.generate_hash_for_transactions(transactions)
-    return BlockHeader(
-            prev_hash=last_block['pow_hash'],
-            merkle_root=fake_merkle_root,
-            timestamp=get_timestamp(),
-            target=TARGET,
-    )
+def index(event, context):
+    params = event.get('queryStringParameters') or {}
+    reset = True if params.get('reset') else False
+    return {
+            'statusCode': 200,
+            'body': json.dumps(handle_index(reset)),
+    }
+
+
+def add_transaction(event, context):
+    print(event)
+    msg = {'msg': 'hello'}
+    transaction = json.loads(event['body'])
+    handle_add_transaction(transaction)
+    return {
+            'statusCode': 200,
+            'body': json.dumps(msg),
+    }
 
 
 def sns_mine(event, context):
+    # Decode the payload and kick over to the library for processing.
     record = event.get('Records', [])[0]
     payload = json.loads(record['Sns']['Message'])
-    print(payload)
 
-    transactions = [Transaction(t) for t in payload['transactions']]
-    print(transactions)
+    transactions = payload['transactions']
     last_block = payload['last_block']
 
-    header = _get_new_block_header(last_block, transactions)
-
-    print('Start mining')
-    print(mine(header))
-
-
-def web_mine(event, context):
-    print(event)
-
-    nonce, valid_hash = None, None
-
-    try:
-        payload = json.loads(event['body'])
-
-        transactions = [Transaction(t) for t in payload['transactions']]
-        last_block = payload['last_block']
-
-        header = _get_new_block_header(last_block, transactions)
-        print(type(header))
-
-        nonce, valid_hash = mine(header)
-    except KeyError as e:
-        msg = 'Missing key: %s' % (e, )
-        response = {
-            'success': False,
-            'msg': msg,
-            'header': None,
-            'valid_hash': '',
-            'transactions': None,
-        }
-    except Exception as e:
-        response = {
-            'success': False,
-            'msg': str(e),
-            'header': None,
-            'valid_hash': '',
-            'transactions': None,
-        }
-        raise
-
-    if nonce is not None and valid_hash is not None:
-        header.nonce = nonce
-        response = {
-                'success': True,
-                'msg': 'Mining complete',
-                'header': header.to_primitive(),
-                'valid_hash': valid_hash,
-                'transactions': [t.to_primitive() for t in transactions],
-        }
-
+    header, pow_hash, transactions = handle_mining(last_block, transactions)
+    response = {
+            'success': True,
+            'msg': 'Mining complete',
+            'header': header.to_primitive(),
+            'pow_hash': pow_hash,
+            'transactions': [t.to_primitive() for t in transactions],
+    }
     return {
             'statusCode': 200,
             'body': json.dumps(response),
+    }
 
+
+def web_mine(event, context):
+    error = None
+    try:
+        payload = json.loads(event['body'])
+        transactions = payload['transactions']
+        last_block = payload['last_block']
+    except KeyError as e:
+        error = 'Missing key: %s' % (e, )
+    except Exception as e:
+        error = str(e)
+
+    if error is not None:
+        response = {
+            'success': False,
+            'msg': error,
+            'header': None,
+            'valid_hash': '',
+            'transactions': None,
+        }
+        return {
+                'statusCode': 200,
+                'body': json.dumps(response),
+        }
+
+    header, pow_hash, transactions = handle_mining(last_block, transactions)
+    response = {
+            'success': True,
+            'msg': 'Mining complete',
+            'header': header.to_primitive(),
+            'pow_hash': pow_hash,
+            'transactions': [t.to_primitive() for t in transactions],
+    }
+    return {
+            'statusCode': 200,
+            'body': json.dumps(response),
     }

@@ -13,13 +13,22 @@ sys.path.append(str(code_dir))
 os.environ.update({
     # setting this to zero means all pow are correct
     'PYCHAIN_DIFFICULTY_BITS': '0',
+    'PYCHAIN_REDIS_HOST': 'redis',
+    'PYCHAIN_REDIS_DB_NUMBER': '1',
 })
+
+
+from pychain.persistence import RedisChain
+from pychain.blockchain.block import Block
+from pychain.blockchain.block_header import BlockHeader
+from pychain.blockchain.genesis import GENESIS_POW_HASH
+from pychain.blockchain.transaction import Transaction
 
 
 def pytest_configure(config):
     """Called at the start of the entire test run"""
-    pass
-
+    r = RedisChain()
+    r.clear_chain()
 
 def pytest_unconfigure(config):
     """Called at the end of a test run"""
@@ -28,4 +37,18 @@ def pytest_unconfigure(config):
 
 def pytest_runtest_teardown(item, nextitem):
     """Called at the end of each test"""
-    pass
+    r = RedisChain()
+    r.clear_chain()
+
+
+@pytest.fixture()
+def block():
+    h = BlockHeader(
+            prev_hash=GENESIS_POW_HASH,
+            merkle_root='2bce0bad29c5575d6e66afc4eb0dff545f8d751f4680d9ef6557345e60fcc141',
+            timestamp=1508907362)
+    return Block(
+            index=1,
+            header=h,
+            transactions=[Transaction('foobar')],
+            pow_hash='c73da18d9150d95f38402361a1be7213362170fd1031fc3b74ca245846bdc27e')

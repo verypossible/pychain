@@ -4,24 +4,10 @@ from pychain.blockchain.block import (
         Block,
         BlockError,
 )
-from pychain.blockchain.genesis import (
-        GENESIS_POW_HASH,
-)
+from pychain.blockchain.genesis import GENESIS_POW_HASH
 from pychain.blockchain.block_header import BlockHeader
 from pychain.blockchain.transaction import Transaction
 
-
-@pytest.fixture()
-def block():
-    h = BlockHeader(
-            prev_hash=GENESIS_POW_HASH,
-            merkle_root='2bce0bad29c5575d6e66afc4eb0dff545f8d751f4680d9ef6557345e60fcc141',
-            timestamp=1508907362)
-    return Block(
-            index=1,
-            header=h,
-            transactions=[Transaction('foobar')],
-            pow_hash='c73da18d9150d95f38402361a1be7213362170fd1031fc3b74ca245846bdc27e')
 
 
 def test_block_len(block):
@@ -86,7 +72,7 @@ def test_check_block_invalid_merkle(mocker):
     assert 'Invalid merkle_root hash' in str(e)
 
 
-def test_as_dict(block):
+def test_to_primitive(block):
     header = {
         'merkle_root': '2bce0bad29c5575d6e66afc4eb0dff545f8d751f4680d9ef6557345e60fcc141',
         'nonce': 0,
@@ -104,4 +90,4 @@ def test_as_dict(block):
             ('a61deaef26c069e32bda388991cf1f07f0a6dd451bc6a7bdad3e34eecbbadb39', '"foobar"')
         ]
     }
-    assert block.as_dict() == expected
+    assert block.to_primitive() == expected

@@ -1,4 +1,4 @@
-FROM verypossible/serverless:1.23-python3
+FROM verypossible/serverless:1.20.0-python3
 
 RUN pip install pipenv
 
