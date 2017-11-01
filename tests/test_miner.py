@@ -37,3 +37,11 @@ def test_mine_no_match_three_iterations(header, mocker):
     header.generate_hash = mock_hasher
     assert miner.mine(header) == (None, None)
     assert mock_hasher.call_count == 3
+
+
+def test_mine_timeout(header, mocker):
+    mocker.patch('pychain.blockchain.miner.MINING_CHECK_ITERATIONS', 0)
+    mock_hasher = mocker.MagicMock(side_effect=('ffff000', 'fff000', 'ff000'))
+    header.generate_hash = mock_hasher
+    with pytest.raises(miner.MiningTimeout):
+        miner.mine(header, timeout=-1)

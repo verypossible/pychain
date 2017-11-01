@@ -31,7 +31,7 @@ class _Chain:
         self.__db = RedisChain()
 
     def __len__(self):
-        return self.__db.get_chain_length()
+        return len(self.__db)
 
     def __iter__(self):
         return iter(self.__blockchain)
@@ -45,12 +45,12 @@ class _Chain:
 
     def _reset(self):
         print('Clearing chain')
-        print(self.__db.clear_chain())
+        print(self.__db.clear())
         print('Chain cleared')
         self._init_genesis_block()
 
     def add_block(self, block):
-        self.__db.add_block_to_chain(block)
+        self.__db.append(block)
 
     def _send_to_miners(self, transactions, last_block):
         arn = 'arn:aws:sns:us-east-1:679892560156:PyChainMiners'
@@ -83,7 +83,7 @@ class _Chain:
         return self._get_new_block_header(last_block, transactions)
 
     def get_last_block(self):
-        return self.__db.get_block_at(-1)
+        return self.__db.get_item_at(-1)
 
     def create_candidate_block(self, transactions):
         print("Creating candidate block!")
@@ -122,4 +122,4 @@ class _Chain:
 # Dumb initialization
 if Chain is None:
     Chain = _Chain()
-    #Chain._init_genesis_block()
+    Chain._init_genesis_block()

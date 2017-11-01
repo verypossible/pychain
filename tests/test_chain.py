@@ -1,19 +1,12 @@
 import pytest
 
 from pychain.blockchain.block import BlockError
-from pychain.blockchain.chain import _Chain
 from pychain.blockchain.transaction import Transaction
 from pychain.blockchain.genesis import (
         GENESIS_POW_HASH,
         get_genesis_block,
 )
 
-
-@pytest.fixture()
-def chain():
-    chain = _Chain()
-    chain._init_genesis_block()
-    return chain
 
 
 @pytest.fixture()

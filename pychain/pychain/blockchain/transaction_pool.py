@@ -11,10 +11,10 @@ def add_transaction(transaction):
         transaction = Transaction(transaction)
 
     r = RedisTransactionPool()
-    r.add_to_pool(transaction)
+    r.append(transaction)
 
-    if r.get_pool_length() >= BLOCK_SIZE:
+    if len(r) >= BLOCK_SIZE:
         transactions = r.get_transactions()
         block = Chain.create_candidate_block(transactions)
         r.record_pending_transactions(transactions)
-        r.clear_pool()
+        r.clear()

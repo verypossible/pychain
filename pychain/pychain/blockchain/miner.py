@@ -6,6 +6,9 @@ from .constants import (
 import time
 
 
+MINING_CHECK_ITERATIONS = 10000
+
+
 class MiningTimeout(Exception):
     pass
 
@@ -21,7 +24,7 @@ def mine(header, timeout=MAX_MINING_TIME):
             return (nonce, hash_result)
 
         counter += 1
-        if counter > 100000:
+        if counter > MINING_CHECK_ITERATIONS:
             if time.time() - start_time > timeout:
                 raise MiningTimeout('Max time reached')
             counter = 0

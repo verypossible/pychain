@@ -17,18 +17,18 @@ os.environ.update({
     'PYCHAIN_REDIS_DB_NUMBER': '1',
 })
 
-
-from pychain.persistence import RedisChain
+from pychain.blockchain import Chain
 from pychain.blockchain.block import Block
 from pychain.blockchain.block_header import BlockHeader
 from pychain.blockchain.genesis import GENESIS_POW_HASH
 from pychain.blockchain.transaction import Transaction
+from pychain.persistence import RedisChain, RedisTransactionPool
 
 
 def pytest_configure(config):
     """Called at the start of the entire test run"""
-    r = RedisChain()
-    r.clear_chain()
+    RedisChain().clear()
+    RedisTransactionPool().clear()
 
 def pytest_unconfigure(config):
     """Called at the end of a test run"""
@@ -37,8 +37,15 @@ def pytest_unconfigure(config):
 
 def pytest_runtest_teardown(item, nextitem):
     """Called at the end of each test"""
-    r = RedisChain()
-    r.clear_chain()
+    RedisChain().clear()
+    RedisTransactionPool().clear()
+
+
+@pytest.fixture()
+def chain():
+    # Since conftest clears out the chain before every run, re-init
+    Chain._init_genesis_block()
+    return Chain
 
 
 @pytest.fixture()
