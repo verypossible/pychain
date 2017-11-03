@@ -25,6 +25,10 @@ class _RedisList:
     def __init__(self):
         self._db = None
 
+    @redis_handle
+    def __iter__(self):
+        return (pickle.loads(t) for t in self.db.lrange(self.LIST_NAME, 0, -1))
+
     def __len__(self):
         return self.get_list_length()
 
@@ -62,9 +66,23 @@ class RedisChain(_RedisList):
 class RedisTransactionPool(_RedisList):
     LIST_NAME = 'tpool'
 
+    @redis_handle
     def get_transactions(self):
         return [pickle.loads(t) for t in self.db.lrange(self.LIST_NAME, 0, -1)]
 
+    @redis_handle
     def record_pending_transactions(self, transactions):
+        p = RedisPendingTransactions()
+        p.add_transactions(transactions)
+        self.clear()
+        #transactions = [pickle.dumps(t) for t in transactions]
+        #return self.db.rpush('pending', *transactions)
+
+
+class RedisPendingTransactions(_RedisList):
+    LIST_NAME = 'pending'
+
+    @redis_handle
+    def add_transactions(self, transactions):
         transactions = [pickle.dumps(t) for t in transactions]
-        return self.db.rpush('pending', *transactions)
+        return self.db.rpush(self.LIST_NAME, *transactions)

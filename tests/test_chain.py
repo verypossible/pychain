@@ -7,6 +7,7 @@ from pychain.blockchain.genesis import (
         get_genesis_block,
 )
 
+from pprint import pprint as pp
 
 
 @pytest.fixture()
@@ -26,9 +27,6 @@ def test_chain_inits_with_genesis(chain):
     assert len(chain.get_last_block()) == 1
     for block in chain:
         assert len(block) == 1
-
-
-from pprint import pprint as pp
 
 def test_get_last_block_genesis(chain):
     block = chain.get_last_block()
@@ -77,6 +75,17 @@ def test_add_invalid_block_tamper_with_header_target(chain, block, mocker):
 
     assert 'POW target greater than expected target' in str(e)
 
+
+def test_create_candidate_block(chain, transactions, mocker):
+    mock_publisher = mocker.patch('pychain.blockchain.chain.publish_mining_required')
+
+    chain.create_candidate_block(transactions)
+
+    expected_params = {
+            'transactions': [t.to_primitive() for t in transactions],
+            'last_block': chain.get_last_block().to_primitive(),
+    }
+    mock_publisher.assert_called_once_with(expected_params)
 
 #
 # def test_create_candidate_block_tamper_with_header_merkle(chain, transactions, mocker):

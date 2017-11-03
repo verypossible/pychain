@@ -7,7 +7,7 @@ import time
 
 def notify(payload):
     client = boto3.client('sns')
-    arn = 'arn:aws:sns:us-east-1:679892560156:PyChainMiners'
+    arn = 'arn:aws:sns:us-east-1:679892560156:devPyChainMiners'
 
     client.publish(
             TopicArn=arn,

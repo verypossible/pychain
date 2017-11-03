@@ -46,5 +46,5 @@ def handle_mining(last_block, transactions):
     return (header, pow_hash, transactions)
 
 
-def handle_add_transaction(t):
-    add_transaction(t)
+def handle_add_transaction(transaction, block_size=None):
+    return add_transaction(transaction, block_size=block_size)

@@ -10,6 +10,7 @@ sys.path.insert(0, str(CWD))
 from pychain.handlers import (
         handle_mining,
         handle_index,
+        handle_add_transaction,
 )
 
 
@@ -23,17 +24,19 @@ def index(event, context):
 
 
 def add_transaction(event, context):
-    print(event)
-    msg = {'msg': 'hello'}
     transaction = json.loads(event['body'])
-    handle_add_transaction(transaction)
+    pool_len = handle_add_transaction(transaction)
     return {
             'statusCode': 200,
-            'body': json.dumps(msg),
+            'body': json.dumps({
+                'success': True,
+                'msg': 'Transaction added to transaction pool, now of length: %s' % pool_len,
+            }),
     }
 
 
 def sns_mine(event, context):
+    print(event)
     # Decode the payload and kick over to the library for processing.
     record = event.get('Records', [])[0]
     payload = json.loads(record['Sns']['Message'])

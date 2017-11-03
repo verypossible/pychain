@@ -22,13 +22,15 @@ from pychain.blockchain.block import Block
 from pychain.blockchain.block_header import BlockHeader
 from pychain.blockchain.genesis import GENESIS_POW_HASH
 from pychain.blockchain.transaction import Transaction
-from pychain.persistence import RedisChain, RedisTransactionPool
+#from pychain.persistence import RedisChain, RedisTransactionPool, RedisPendingTransactions
+from pychain.persistence import clear_all_dbs
 
 
 def pytest_configure(config):
     """Called at the start of the entire test run"""
-    RedisChain().clear()
-    RedisTransactionPool().clear()
+    clear_all_dbs()
+    # RedisChain().clear()
+    # RedisTransactionPool().clear()
 
 def pytest_unconfigure(config):
     """Called at the end of a test run"""
@@ -37,8 +39,9 @@ def pytest_unconfigure(config):
 
 def pytest_runtest_teardown(item, nextitem):
     """Called at the end of each test"""
-    RedisChain().clear()
-    RedisTransactionPool().clear()
+    clear_all_dbs()
+    # RedisChain().clear()
+    # RedisTransactionPool().clear()
 
 
 @pytest.fixture()

@@ -2,19 +2,22 @@ from . import Chain
 from .constants import BLOCK_SIZE
 from .transaction import Transaction
 
-from ..persistence import RedisTransactionPool
+from ..persistence import RedisTransactionPool, RedisPendingTransactions
 
 
 
-def add_transaction(transaction):
+def add_transaction(transaction, block_size=None):
     if not isinstance(transaction, Transaction):
         transaction = Transaction(transaction)
 
-    r = RedisTransactionPool()
-    r.append(transaction)
+    pool = RedisTransactionPool()
+    pool.append(transaction)
+    pool_len = len(pool)
 
-    if len(r) >= BLOCK_SIZE:
-        transactions = r.get_transactions()
+    block_size = block_size if block_size is not None else BLOCK_SIZE
+    if len(pool) >= block_size:
+        transactions = pool.get_transactions()
         block = Chain.create_candidate_block(transactions)
-        r.record_pending_transactions(transactions)
-        r.clear()
+        pool.record_pending_transactions(transactions)
+
+    return pool_len

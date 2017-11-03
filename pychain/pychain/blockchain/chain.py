@@ -4,13 +4,17 @@ import requests
 
 from .block import Block
 from .block_header import BlockHeader
-from .constants import TARGET
+from .constants import (
+        MINING_ARN,
+        TARGET,
+)
 from .genesis import get_genesis_block
 from .transaction import Transaction
 
 from ..hashing import generate_hash
 from ..helpers import get_timestamp
 from ..persistence import RedisChain
+from ..publish import publish_mining_required
 
 from  pprint import pprint as pp
 
@@ -53,19 +57,13 @@ class _Chain:
         self.__db.append(block)
 
     def _send_to_miners(self, transactions, last_block):
-        arn = 'arn:aws:sns:us-east-1:679892560156:PyChainMiners'
-
+        print('Preparing...')
         payload = {
             'transactions': [t.to_primitive() for t in transactions],
             'last_block': last_block.to_primitive(),
-        },
-
-        client = boto3.client('sns')
-        client.publish(
-                TopicArn=arn,
-                Message=json.dumps({'default': json.dumps(payload)}),
-                MessageStructure='json',
-        )
+        }
+        print('Publishing')
+        publish_mining_required(payload)
 
     def _get_new_block_header(self, block, transactions):
         # This is not really a merkle root.  Instead, simply hash all of the hashes for each
@@ -88,6 +86,7 @@ class _Chain:
     def create_candidate_block(self, transactions):
         print("Creating candidate block!")
         last_block = self.get_last_block()
+        print('Got last block...sending to miners')
         self._send_to_miners(transactions, last_block)
 
     def add_new_block(self, block):

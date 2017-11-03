@@ -22,6 +22,10 @@ provider:
         - "ec2:DescribeNetworkInterfaces"
         - "ec2:DeleteNetworkInterface"
       Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "sns:*"
+      Resource: "arn:aws:sns:${self:provider.region}:*:${env:ENV}PyChainMiners"
   environment:
     # PYCHAIN_DIFFICULTY_BITS: "18"
     # PYCHAIN_MAX_MINING_TIME: "15"
@@ -43,6 +47,11 @@ package:
 
 resources:
   Resources:
+    SNSMiningTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: ${env:ENV}PyChainMiners
+        TopicName: ${env:ENV}PyChainMiners
     ElasticacheNode:
       Type: AWS::ElastiCache::CacheCluster
       Properties:
@@ -82,7 +91,10 @@ functions:
   Mine:
     handler: handler.sns_mine
     events:
-      - sns: PyChainMiners
+      - sns:
+          topicName: ${env:ENV}PyChainMiners
+          arn:
+            Ref: SNSMiningTopic
   WebMine:
     handler: handler.web_mine
     events:
