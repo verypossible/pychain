@@ -10,8 +10,10 @@ sys.path.insert(0, str(CWD))
 from pychain.handlers import (
         handle_mining,
         handle_index,
+        handle_add_new_block,
         handle_add_transaction,
 )
+from pychain.globals import _request_local
 
 
 def index(event, context):
@@ -24,6 +26,7 @@ def index(event, context):
 
 
 def add_transaction(event, context):
+    _request_local.host = event['headers']['Host'] + event['requestContext']['path']
     transaction = json.loads(event['body'])
     pool_len = handle_add_transaction(transaction)
     return {
@@ -43,15 +46,30 @@ def sns_mine(event, context):
 
     transactions = payload['transactions']
     last_block = payload['last_block']
+    callback_url = payload.get('callback_url')
 
     header, pow_hash, transactions = handle_mining(last_block, transactions)
     response = {
-            'success': True,
+            'success': True if header.nonce else False,
             'msg': 'Mining complete',
             'header': header.to_primitive(),
             'pow_hash': pow_hash,
-            'transactions': [t.to_primitive() for t in transactions],
+            'transactions': [t._raw_data for t in transactions],
     }
+    if callback_url:
+        import requests
+        resp = requests.post(callback_url, json=response)
+        print(resp)
+        print(resp.text)
+    # return {
+    #         'statusCode': 200,
+    #         'body': json.dumps(response),
+    # }
+
+def verify_new_block(event, context):
+    payload = json.loads(event['body'])
+    print(payload)
+    response = handle_add_new_block(**payload)
     return {
             'statusCode': 200,
             'body': json.dumps(response),

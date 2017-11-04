@@ -1,7 +1,6 @@
 import json
 import requests
 
-URL = 'http://localhost:5000/add'
 
 # with open('inputs.json') as fh:
 #     data_array = json.load(fh)
@@ -19,11 +18,11 @@ def create_fake_obj():
     }
 
 
+URL = 'https://fd08ld46z2.execute-api.us-east-1.amazonaws.com/dev'
 data_array = [create_fake_obj() for i in range(21)]
 
-for obj in data_array[:11]:
+for obj in data_array[:7]:
     resp = requests.post(URL, json=obj)
-    #import pdb; pdb.set_trace()
     if resp.status_code == 200:
         print(resp.json())
     else:

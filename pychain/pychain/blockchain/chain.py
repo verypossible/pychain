@@ -2,7 +2,6 @@ import boto3
 import json
 import requests
 
-from .block import Block
 from .block_header import BlockHeader
 from .constants import (
         MINING_ARN,
@@ -11,6 +10,7 @@ from .constants import (
 from .genesis import get_genesis_block
 from .transaction import Transaction
 
+from ..globals import _request_local
 from ..hashing import generate_hash
 from ..helpers import get_timestamp
 from ..persistence import RedisChain
@@ -59,8 +59,10 @@ class _Chain:
     def _send_to_miners(self, transactions, last_block):
         print('Preparing...')
         payload = {
-            'transactions': [t.to_primitive() for t in transactions],
+            #'transactions': [t.to_primitive() for t in transactions],
+            'transactions': [t._raw_data for t in transactions],
             'last_block': last_block.to_primitive(),
+            'callback_url': 'https://%s/verifyblock' % (_request_local.host, ),
         }
         print('Publishing')
         publish_mining_required(payload)

@@ -14,6 +14,7 @@ class Transaction:
         if hasattr(data, 'keys'):
             data = OrderedDict(sorted(data.items(), key=lambda t: t[0]))
 
+        self._raw_data = data
         self._data = json.dumps(data)
 
         # ensure data is non-empty

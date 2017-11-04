@@ -1,7 +1,10 @@
 import json
 
 from .blockchain import Chain
-from .blockchain.block import BlockError
+from .blockchain.block import (
+        Block,
+        BlockError,
+)
 from .blockchain.block_header import BlockHeader
 from .blockchain.constants import TARGET
 from .blockchain.miner import mine
@@ -34,10 +37,11 @@ def handle_index(reset=False):
 
 
 def handle_mining(last_block, transactions):
+    print('Start mining')
+    print(transactions)
     transactions = [Transaction(t) for t in transactions]
     header = _get_new_block_header(last_block, transactions)
 
-    print('Start mining')
     nonce, pow_hash = mine(header)
     print('Mining complete: nonce: %s, pow_hash: %s' % (nonce, pow_hash))
 
@@ -48,3 +52,19 @@ def handle_mining(last_block, transactions):
 
 def handle_add_transaction(transaction, block_size=None):
     return add_transaction(transaction, block_size=block_size)
+
+
+def handle_add_new_block(*, header, pow_hash, transactions, **kwargs):
+    header = BlockHeader(**header)
+    transactions = [Transaction(t) for t in transactions]
+    last_block = Chain.get_last_block()
+    block = Block(
+            index=last_block.index + 1,
+            header=header,
+            transactions=transactions,
+            pow_hash=pow_hash,
+    )
+    success = Chain.add_new_block(block)
+    index = handle_index()
+    index['success'] = success
+    return index

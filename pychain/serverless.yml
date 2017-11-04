@@ -95,6 +95,11 @@ functions:
           topicName: ${env:ENV}PyChainMiners
           arn:
             Ref: SNSMiningTopic
+  VerifyNewBlock:
+    handler: handler.verify_new_block
+    events:
+      - http: POST /verifyblock
+
   WebMine:
     handler: handler.web_mine
     events:
