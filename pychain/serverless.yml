@@ -88,6 +88,13 @@ functions:
     handler: handler.add_transaction
     events:
       - http: POST /
+      - http:
+          path: /{db_number}
+          method: post
+          request:
+            parameters:
+              paths:
+                db_number: true
   Mine:
     handler: handler.sns_mine
     timeout: 60
@@ -100,8 +107,7 @@ functions:
     handler: handler.verify_new_block
     events:
       - http: POST /verifyblock
-
   WebMine:
     handler: handler.web_mine
     events:
-      - http: POST /mine
+      - http: POST /_mine

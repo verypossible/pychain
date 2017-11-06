@@ -14,7 +14,7 @@ os.environ.update({
     # setting this to zero means all pow are correct
     'PYCHAIN_DIFFICULTY_BITS': '0',
     'PYCHAIN_REDIS_HOST': 'redis',
-    'PYCHAIN_REDIS_DB_NUMBER': '1',
+    'PYCHAIN_DEFAULT_DB_NUMBER': '5',
 })
 
 from pychain.blockchain import Chain

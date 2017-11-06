@@ -6,7 +6,7 @@ from ..persistence import RedisTransactionPool, RedisPendingTransactions
 
 
 
-def add_transaction(transaction, block_size=None):
+def add_transaction(transaction, block_size=None, db_number=1):
     if not isinstance(transaction, Transaction):
         transaction = Transaction(transaction)
 

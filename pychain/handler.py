@@ -7,13 +7,15 @@ from pathlib import Path
 CWD = Path(__file__).resolve().cwd() / 'lib'
 sys.path.insert(0, str(CWD))
 
+import requests
+
 from pychain.handlers import (
         handle_mining,
         handle_index,
         handle_add_new_block,
         handle_add_transaction,
 )
-from pychain.globals import _request_local
+from pychain.globals import middleware
 
 
 def index(event, context):
@@ -25,8 +27,16 @@ def index(event, context):
     }
 
 
+@middleware
 def add_transaction(event, context):
-    _request_local.host = event['headers']['Host'] + event['requestContext']['path']
+    """Add a transaction to the transaction pool.
+
+    This comes in over https as a POST.
+
+    Supports adding transactions for up to 3 different hosts, which arrive as part of the URL in
+    the form of $HOST/${id}/.  If no id is found then we default to 1.
+
+    """
     transaction = json.loads(event['body'])
     pool_len = handle_add_transaction(transaction)
     return {
@@ -57,7 +67,6 @@ def sns_mine(event, context):
             'transactions': [t._raw_data for t in transactions],
     }
     if callback_url:
-        import requests
         resp = requests.post(callback_url, json=response)
         print(resp)
         print(resp.text)

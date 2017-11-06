@@ -3,15 +3,16 @@ import pickle
 
 import os
 
+from ..globals import get_db_number
+
 
 REDIS_HOST = os.environ['PYCHAIN_REDIS_HOST']
-REDIS_DB_NUMBER = int(os.environ.get('PYCHAIN_REDIS_DB_NUMBER', 0))
 
 
 def redis_handle(func):
     def _inner(self, *args, **kwargs):
         if self._db is None:
-            db_num = self.__class__.DB_NUMBER or REDIS_DB_NUMBER
+            db_num = get_db_number()
             self._db = redis.StrictRedis(host=REDIS_HOST, port=6379, db=db_num)
         return func(self, *args, **kwargs)
 
@@ -20,7 +21,6 @@ def redis_handle(func):
 
 class _RedisList:
     LIST_NAME = '__test'
-    DB_NUMBER = None
 
     def __init__(self):
         self._db = None

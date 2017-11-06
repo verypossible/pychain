@@ -10,6 +10,8 @@ MAX_NONCE = int(os.environ.get('PYCHAIN_MAX_NONCE', _max_nonce))
 
 MAX_MINING_TIME = int(os.environ.get('PYCHAIN_MAX_MINING_TIME', 120))
 
+DEFAULT_DB_NUMBER = int(os.environ.get('PYCHAIN_DEFAULT_DB_NUMBER', 1))
+
 
 AWS_ACCOUNT_ID = os.environ.get('AWS_ACCOUNT_ID', '679892560156')
 AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
