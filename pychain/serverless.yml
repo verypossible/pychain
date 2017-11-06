@@ -90,6 +90,7 @@ functions:
       - http: POST /
   Mine:
     handler: handler.sns_mine
+    timeout: 60
     events:
       - sns:
           topicName: ${env:ENV}PyChainMiners

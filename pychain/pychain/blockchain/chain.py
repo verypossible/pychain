@@ -107,6 +107,7 @@ class _Chain:
         # valiate the chain
         prev_block = self.get_last_block()
 
+        # either one of these signifies breaking of the chain, so need to handle that.
         if prev_block.index + 1 != block.index:
             print('Unexpected block index!')
             return False

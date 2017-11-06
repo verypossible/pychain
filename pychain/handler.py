@@ -61,10 +61,9 @@ def sns_mine(event, context):
         resp = requests.post(callback_url, json=response)
         print(resp)
         print(resp.text)
-    # return {
-    #         'statusCode': 200,
-    #         'body': json.dumps(response),
-    # }
+
+    return json.dumps(resp.json())
+
 
 def verify_new_block(event, context):
     payload = json.loads(event['body'])
