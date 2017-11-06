@@ -82,8 +82,9 @@ def test_create_candidate_block(chain, transactions, mocker):
     chain.create_candidate_block(transactions)
 
     expected_params = {
-            'transactions': [t.to_primitive() for t in transactions],
+            'transactions': [t._raw_data for t in transactions],
             'last_block': chain.get_last_block().to_primitive(),
+            'callback_url': 'https://testhost.local/verifyblock',
     }
     mock_publisher.assert_called_once_with(expected_params)
 

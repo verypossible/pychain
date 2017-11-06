@@ -22,15 +22,13 @@ from pychain.blockchain.block import Block
 from pychain.blockchain.block_header import BlockHeader
 from pychain.blockchain.genesis import GENESIS_POW_HASH
 from pychain.blockchain.transaction import Transaction
-#from pychain.persistence import RedisChain, RedisTransactionPool, RedisPendingTransactions
+from pychain.globals import _request_local
 from pychain.persistence import clear_all_dbs
 
 
 def pytest_configure(config):
     """Called at the start of the entire test run"""
     clear_all_dbs()
-    # RedisChain().clear()
-    # RedisTransactionPool().clear()
 
 def pytest_unconfigure(config):
     """Called at the end of a test run"""
@@ -40,12 +38,11 @@ def pytest_unconfigure(config):
 def pytest_runtest_teardown(item, nextitem):
     """Called at the end of each test"""
     clear_all_dbs()
-    # RedisChain().clear()
-    # RedisTransactionPool().clear()
 
 
 @pytest.fixture()
 def chain():
+    _request_local.host = 'testhost.local'
     # Since conftest clears out the chain before every run, re-init
     Chain._init_genesis_block()
     return Chain
