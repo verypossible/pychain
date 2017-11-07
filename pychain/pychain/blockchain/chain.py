@@ -3,14 +3,14 @@ import json
 import requests
 
 from .block_header import BlockHeader
-from .constants import (
-        MINING_ARN,
-        TARGET,
-)
 from .genesis import get_genesis_block
 from .transaction import Transaction
 
-from ..globals import _request_local
+from ..constants import (
+        MINING_ARN,
+        TARGET,
+)
+from ..globals import get_host
 from ..hashing import generate_hash
 from ..helpers import get_timestamp
 from ..persistence import RedisChain
@@ -62,7 +62,7 @@ class _Chain:
             #'transactions': [t.to_primitive() for t in transactions],
             'transactions': [t._raw_data for t in transactions],
             'last_block': last_block.to_primitive(),
-            'callback_url': 'https://%s/verifyblock' % (_request_local.host, ),
+            'callback_url': 'https://%s/verifyblock' % (get_host(), ),
         }
         print('Publishing')
         publish_mining_required(payload)

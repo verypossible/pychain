@@ -1,7 +1,7 @@
 import boto3
 import json
 
-from .blockchain.constants import MINING_ARN
+from .constants import MINING_ARN
 
 
 def publish_mining_required(payload):

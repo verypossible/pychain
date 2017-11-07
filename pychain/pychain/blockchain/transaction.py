@@ -25,10 +25,12 @@ class Transaction:
         return generate_hash(self._data)
 
     def to_primitive(self):
-        return {
-            'data': self._data,
-            'hash': self.generate_hash(),
-        }
+        return self._data
+        #return self._raw_data
+        # return {
+        #     'data': self._data,
+        #     'hash': self.generate_hash(),
+        # }
 
     @staticmethod
     def generate_hash_for_transactions(transactions):

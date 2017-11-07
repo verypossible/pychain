@@ -1,9 +1,8 @@
 import time
-from .constants import (
+from ..constants import (
         MAX_NONCE,
         MAX_MINING_TIME,
 )
-import time
 
 
 MINING_CHECK_ITERATIONS = 10000

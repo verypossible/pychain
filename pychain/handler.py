@@ -18,6 +18,7 @@ from pychain.handlers import (
 from pychain.globals import middleware
 
 
+@middleware
 def index(event, context):
     params = event.get('queryStringParameters') or {}
     reset = True if params.get('reset') else False
@@ -38,13 +39,10 @@ def add_transaction(event, context):
 
     """
     transaction = json.loads(event['body'])
-    pool_len = handle_add_transaction(transaction)
+    msg = handle_add_transaction(transaction)
     return {
             'statusCode': 200,
-            'body': json.dumps({
-                'success': True,
-                'msg': 'Transaction added to transaction pool, now of length: %s' % pool_len,
-            }),
+            'body': json.dumps(msg),
     }
 
 

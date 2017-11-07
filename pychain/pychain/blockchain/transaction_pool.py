@@ -1,8 +1,9 @@
 from . import Chain
-from .constants import BLOCK_SIZE
 from .transaction import Transaction
 
+from ..constants import BLOCK_SIZE
 from ..persistence import RedisTransactionPool, RedisPendingTransactions
+from ..p2p import broadcast
 
 
 
@@ -13,6 +14,8 @@ def add_transaction(transaction, block_size=None, db_number=1):
     pool = RedisTransactionPool()
     pool.append(transaction)
     pool_len = len(pool)
+
+    broadcast(transaction)
 
     block_size = block_size if block_size is not None else BLOCK_SIZE
     if len(pool) >= block_size:

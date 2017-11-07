@@ -1,7 +1,6 @@
 import json
 
-from .constants import TARGET
-
+from ..constants import TARGET
 from ..hashing import generate_hash
 from ..helpers import get_timestamp
 

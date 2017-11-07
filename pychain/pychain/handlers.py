@@ -6,11 +6,12 @@ from .blockchain.block import (
         BlockError,
 )
 from .blockchain.block_header import BlockHeader
-from .blockchain.constants import TARGET
 from .blockchain.miner import mine
 from .blockchain.transaction import Transaction
 from .blockchain.transaction_pool import add_transaction
+from .constants import TARGET
 from .helpers import get_timestamp
+from .globals import get_db_number
 
 from pprint import pprint as pp
 
@@ -32,7 +33,8 @@ def handle_index(reset=False):
         Chain._reset()
     return {
         'num_blocks': len(Chain),
-        'latest_block': Chain.get_last_block().to_primitive()
+        'latest_block': Chain.get_last_block().to_primitive(),
+        'db_number': get_db_number(),
     }
 
 
@@ -51,7 +53,12 @@ def handle_mining(last_block, transactions):
 
 
 def handle_add_transaction(transaction, block_size=None):
-    return add_transaction(transaction, block_size=block_size)
+    pool_len = add_transaction(transaction, block_size=block_size)
+    return {
+        'success': True,
+        'msg': 'Transaction added to transaction pool, now of length: %s' % pool_len,
+        'db_number': get_db_number(),
+    }
 
 
 def handle_add_new_block(*, header, pow_hash, transactions, **kwargs):

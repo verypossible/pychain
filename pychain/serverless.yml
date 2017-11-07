@@ -84,6 +84,13 @@ functions:
     handler: handler.index
     events:
       - http: GET /
+      - http:
+          path: /{db_number}
+          method: get
+          request:
+            parameters:
+              paths:
+                db_number: true
   AddTransaction:
     handler: handler.add_transaction
     events:
