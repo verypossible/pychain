@@ -102,6 +102,13 @@ functions:
             parameters:
               paths:
                 db_number: true
+      - http:
+          path: /broadcast/{db_number}
+          method: post
+          request:
+            parameters:
+              paths:
+                db_number: true
   Mine:
     handler: handler.sns_mine
     timeout: 60
