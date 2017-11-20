@@ -52,8 +52,12 @@ def handle_mining(last_block, transactions):
     return (header, pow_hash, transactions)
 
 
-def handle_add_transaction(transaction, block_size=None):
-    pool_len = add_transaction(transaction, block_size=block_size)
+def handle_add_transaction(transaction, block_size=None, is_broadcasting=False):
+    pool_len = add_transaction(
+            transaction,
+            block_size=block_size,
+            is_broadcasting=is_broadcasting,
+    )
     return {
         'success': True,
         'msg': 'Transaction added to transaction pool, now of length: %s' % pool_len,

@@ -8,7 +8,7 @@ def broadcast(*items):
     me = get_db_number()
 
     host = get_host()
-    urls = ('https://%s/%s' % (host, i) for i in PEERS if i != me)
+    urls = ('https://%s/broadcast/%s' % (host, i) for i in PEERS if i != me)
 
     for item in items:
         for url in urls:

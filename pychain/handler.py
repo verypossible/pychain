@@ -38,10 +38,9 @@ def add_transaction(event, context):
     the form of $HOST/${id}/.  If no id is found then we default to 1.
 
     """
-    broadcast = True if '/broadcast' in event['path'] else False
-    #transaction = json.loads(event['body'])
-    #msg = handle_add_transaction(transaction)
-    msg = {'is_broadcasting': broadcast}
+    is_broadcasting = True if '/broadcast' in event['path'] else False
+    transaction = json.loads(event['body'])
+    msg = handle_add_transaction(transaction, is_broadcasting=is_broadcasting)
     return {
             'statusCode': 200,
             'body': json.dumps(msg),
