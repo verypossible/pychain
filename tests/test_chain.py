@@ -79,12 +79,19 @@ def test_add_invalid_block_tamper_with_header_target(chain, block, mocker):
 def test_create_candidate_block(chain, transactions, mocker):
     mock_publisher = mocker.patch('pychain.blockchain.chain.publish_mining_required')
 
+    mocker.patch.dict('pychain.globals._event',
+            {
+                'headers': {'Host': 'testhost.local'},
+                'requestContext': {'stage': 'dev'},
+            }
+    )
+
     chain.create_candidate_block(transactions)
 
     expected_params = {
             'transactions': [t._raw_data for t in transactions],
-            'last_block': chain.get_last_block().to_primitive(),
-            'callback_url': 'https://testhost.local/verifyblock',
+            'callback_url': 'https://testhost.local/dev/verifyblock/1',
+            'db_number': 1,
     }
     mock_publisher.assert_called_once_with(expected_params)
 

@@ -75,7 +75,6 @@ def sns_mine(event, context):
 
 @middleware
 def verify_new_block(event, context):
-    print(event)
     payload = json.loads(event['body'])
     response = handle_add_new_block(**payload)
     return {

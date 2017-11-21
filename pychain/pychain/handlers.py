@@ -21,7 +21,6 @@ def _get_new_block_header(last_block, transactions):
     # transaction
     fake_merkle_root = Transaction.generate_hash_for_transactions(transactions)
     return BlockHeader(
-            #prev_hash=last_block['pow_hash'],
             prev_hash=last_block.hash,
             merkle_root=fake_merkle_root,
             timestamp=get_timestamp(),
