@@ -21,7 +21,8 @@ def _get_new_block_header(last_block, transactions):
     # transaction
     fake_merkle_root = Transaction.generate_hash_for_transactions(transactions)
     return BlockHeader(
-            prev_hash=last_block['pow_hash'],
+            #prev_hash=last_block['pow_hash'],
+            prev_hash=last_block.hash,
             merkle_root=fake_merkle_root,
             timestamp=get_timestamp(),
             target=TARGET,
@@ -38,10 +39,11 @@ def handle_index(reset=False):
     }
 
 
-def handle_mining(last_block, transactions):
-    print('Start mining')
+def handle_mining(transactions):
+    print('Start mining on db: %s' % get_db_number())
     print(transactions)
     transactions = [Transaction(t) for t in transactions]
+    last_block = Chain.get_last_block()
     header = _get_new_block_header(last_block, transactions)
 
     nonce, pow_hash = mine(header)
@@ -66,6 +68,7 @@ def handle_add_transaction(transaction, block_size=None, is_broadcasting=False):
 
 
 def handle_add_new_block(*, header, pow_hash, transactions, **kwargs):
+    print('Adding new block on db: %s' % get_db_number())
     header = BlockHeader(**header)
     transactions = [Transaction(t) for t in transactions]
     last_block = Chain.get_last_block()

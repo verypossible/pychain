@@ -47,6 +47,7 @@ def add_transaction(event, context):
     }
 
 
+@middleware
 def sns_mine(event, context):
     print(event)
     # Decode the payload and kick over to the library for processing.
@@ -54,10 +55,9 @@ def sns_mine(event, context):
     payload = json.loads(record['Sns']['Message'])
 
     transactions = payload['transactions']
-    last_block = payload['last_block']
     callback_url = payload.get('callback_url')
 
-    header, pow_hash, transactions = handle_mining(last_block, transactions)
+    header, pow_hash, transactions = handle_mining(transactions)
     response = {
             'success': True if header.nonce else False,
             'msg': 'Mining complete',
@@ -73,9 +73,10 @@ def sns_mine(event, context):
     return json.dumps(resp.json())
 
 
+@middleware
 def verify_new_block(event, context):
+    print(event)
     payload = json.loads(event['body'])
-    print(payload)
     response = handle_add_new_block(**payload)
     return {
             'statusCode': 200,

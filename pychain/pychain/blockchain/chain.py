@@ -10,7 +10,7 @@ from ..constants import (
         MINING_ARN,
         TARGET,
 )
-from ..globals import get_host
+from ..globals import get_host, get_db_number
 from ..hashing import generate_hash
 from ..helpers import get_timestamp
 from ..persistence import RedisChain
@@ -41,6 +41,8 @@ class _Chain:
         return iter(self.__blockchain)
 
     def _init_genesis_block(self):
+        print('Looking up genesis len', self.__db.db_num)
+
         if len(self) < 1:
             genesis_block = get_genesis_block()
             genesis_block.check_block_header()
@@ -55,17 +57,6 @@ class _Chain:
 
     def add_block(self, block):
         self.__db.append(block)
-
-    def _send_to_miners(self, transactions, last_block):
-        print('Preparing...')
-        payload = {
-            #'transactions': [t.to_primitive() for t in transactions],
-            'transactions': [t._raw_data for t in transactions],
-            'last_block': last_block.to_primitive(),
-            'callback_url': 'https://%s/verifyblock' % (get_host(), ),
-        }
-        print('Publishing')
-        publish_mining_required(payload)
 
     def _get_new_block_header(self, block, transactions):
         # This is not really a merkle root.  Instead, simply hash all of the hashes for each
@@ -85,12 +76,6 @@ class _Chain:
     def get_last_block(self):
         return self.__db.get_item_at(-1)
 
-    def create_candidate_block(self, transactions):
-        print("Creating candidate block!")
-        last_block = self.get_last_block()
-        print('Got last block...sending to miners')
-        self._send_to_miners(transactions, last_block)
-
     def add_new_block(self, block):
         if not self.validate_block(block):
             return None
@@ -98,6 +83,17 @@ class _Chain:
         print('Adding new valid block to chain')
         self.add_block(block)
         return True
+
+    def create_candidate_block(self, transactions):
+        print("Creating candidate block!")
+        db_num = get_db_number()
+        print('Publishing. DB number: %s' % (db_num, ))
+        payload = {
+            'transactions': [t._raw_data for t in transactions],
+            'callback_url': 'https://%s/verifyblock/%s' % (get_host(), db_num),
+            'db_number': db_num,
+        }
+        publish_mining_required(payload)
 
     def validate_block(self, block):
         # Validate this block is consistent
@@ -113,6 +109,8 @@ class _Chain:
             return False
         if prev_block.hash != block.header.prev_hash:
             print('Mismatch block hashes!')
+            print('Prev block hash: %s' % prev_block.hash)
+            print('New block prev hash: %s' % block.header.prev_hash)
             return False
 
         # if prev_block.hash != hash(prev_block):
@@ -124,4 +122,3 @@ class _Chain:
 # Dumb initialization
 if Chain is None:
     Chain = _Chain()
-    Chain._init_genesis_block()

@@ -18,10 +18,10 @@ def create_fake_obj():
     }
 
 
-URL = 'https://fd08ld46z2.execute-api.us-east-1.amazonaws.com/dev'
+URL = 'https://vv9c7kd384.execute-api.us-east-1.amazonaws.com/dev/1'
 data_array = [create_fake_obj() for i in range(21)]
 
-for obj in data_array[:7]:
+for obj in data_array[:5]:
     resp = requests.post(URL, json=obj)
     if resp.status_code == 200:
         print(resp.json())

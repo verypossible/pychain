@@ -120,7 +120,13 @@ functions:
   VerifyNewBlock:
     handler: handler.verify_new_block
     events:
-      - http: POST /verifyblock
+      - http:
+          path: /verifyblock/{db_number}
+          method: post
+          request:
+            parameters:
+              paths:
+                db_number: true
   WebMine:
     handler: handler.web_mine
     events:

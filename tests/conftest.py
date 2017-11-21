@@ -22,7 +22,6 @@ from pychain.blockchain.block import Block
 from pychain.blockchain.block_header import BlockHeader
 from pychain.blockchain.genesis import GENESIS_POW_HASH
 from pychain.blockchain.transaction import Transaction
-from pychain.globals import _request_local
 from pychain.persistence import clear_all_dbs
 
 
@@ -42,7 +41,6 @@ def pytest_runtest_teardown(item, nextitem):
 
 @pytest.fixture()
 def chain():
-    _request_local.host = 'testhost.local'
     # Since conftest clears out the chain before every run, re-init
     Chain._init_genesis_block()
     return Chain

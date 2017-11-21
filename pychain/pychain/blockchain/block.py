@@ -53,34 +53,3 @@ class Block:
                     'nonce': self.header.nonce,
                 }
         }
-
-
-#
-# def add_block_to_redis(block):
-#     b = pickle.dumps(block)
-#     return r.rpush(LIST, b)
-#
-#
-# def add_genesis_block():
-#     result = r.set('GENESIS', _GENSIS_BLOCK.hash)
-#     was_added = add_block_to_redis(_GENSIS_BLOCK)
-#     return result
-
-
-# def get_latest_block(as_dict=False):
-#     item = r.lrange(LIST, -1, -1)[0]
-#     block = pickle.loads(item)
-#     if as_dict:
-#         block = block.as_dict()
-#     return block
-#
-#
-# def get_genesis_block():
-#     return r.get('GENESIS') == _GENSIS_BLOCK.hash
-#
-#
-# def generate_next_block(block_data, previous_block=None):
-#     previous_block = previous_block or get_latest_block()
-#     next_index = previous_block.index + 1
-#     next_timestamp = get_timestamp()
-#     return Block(next_index, previous_block.hash, next_timestamp, block_data)

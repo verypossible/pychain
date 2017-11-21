@@ -11,8 +11,9 @@ REDIS_HOST = os.environ['PYCHAIN_REDIS_HOST']
 
 def redis_handle(func):
     def _inner(self, *args, **kwargs):
-        if self._db is None:
-            db_num = get_db_number()
+        db_num = get_db_number()
+        if db_num != self._db_num or self._db is None:
+            self._db_num = db_num
             self._db = redis.StrictRedis(host=REDIS_HOST, port=6379, db=db_num)
         return func(self, *args, **kwargs)
 
@@ -24,6 +25,7 @@ class _RedisList:
 
     def __init__(self):
         self._db = None
+        self._db_num = 1
 
     @redis_handle
     def __iter__(self):
@@ -35,6 +37,10 @@ class _RedisList:
     @property
     def db(self):
         return self._db
+
+    @property
+    def db_num(self):
+        return self._db_num
 
     @redis_handle
     def append(self, block):
@@ -75,8 +81,6 @@ class RedisTransactionPool(_RedisList):
         p = RedisPendingTransactions()
         p.add_transactions(transactions)
         self.clear()
-        #transactions = [pickle.dumps(t) for t in transactions]
-        #return self.db.rpush('pending', *transactions)
 
 
 class RedisPendingTransactions(_RedisList):
