@@ -13,6 +13,7 @@ from pychain.handlers import (
         handle_mining,
         handle_index,
         handle_add_new_block,
+        handle_validate_new_block,
         handle_add_transaction,
 )
 from pychain.globals import middleware
@@ -49,7 +50,10 @@ def add_transaction(event, context):
 
 @middleware
 def sns_mine(event, context):
-    print(event)
+    # SNS handler which will be called n times, once for each one of our DBs/nodes. This will start
+    # the mining process and broadcast out the solution to the callback URL which will point to the
+    # same node/db number. That callback will kick off the process of validation and adding of the
+    # newly minted block.
     # Decode the payload and kick over to the library for processing.
     record = event.get('Records', [])[0]
     payload = json.loads(record['Sns']['Message'])
@@ -58,7 +62,7 @@ def sns_mine(event, context):
     callback_url = payload.get('callback_url')
 
     header, pow_hash, transactions = handle_mining(transactions)
-    response = {
+    payload = {
             'success': True if header.nonce else False,
             'msg': 'Mining complete',
             'header': header.to_primitive(),
@@ -66,7 +70,8 @@ def sns_mine(event, context):
             'transactions': [t._raw_data for t in transactions],
     }
     if callback_url:
-        resp = requests.post(callback_url, json=response)
+        print('Posting mining result to callback url: %s' % callback_url)
+        resp = requests.post(callback_url, json=payload)
         print(resp)
         print(resp.text)
 
@@ -74,9 +79,24 @@ def sns_mine(event, context):
 
 
 @middleware
+def add_new_block(event, context):
+    payload = json.loads(event['body'])
+    print(payload)
+    handle_add_new_block(payload, is_broadcasting=True)
+    response = {'success': True}
+    return {
+            'statusCode': 200,
+            'body': json.dumps(response),
+    }
+
+
+@middleware
 def verify_new_block(event, context):
     payload = json.loads(event['body'])
-    response = handle_add_new_block(**payload)
+    is_valid, block = handle_validate_new_block(**payload)
+    if is_valid:
+        handle_add_new_block(block)
+    response = {'is_valid': is_valid}
     return {
             'statusCode': 200,
             'body': json.dumps(response),

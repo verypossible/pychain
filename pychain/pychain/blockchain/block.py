@@ -42,7 +42,8 @@ class Block:
     def to_primitive(self):
         return {
                 'index': self.index,
-                'transactions': [(t.generate_hash(), t._data) for t in self.__transactions],
+                'transactions': [(t.generate_hash(), t._raw_data) for t in self.__transactions],
+                #'transactions': [t._raw_data for t in self.__transactions],
                 'pow_hash': self.__pow_hash,
                 'header': {
                     'prev_hash': self.header.prev_hash,

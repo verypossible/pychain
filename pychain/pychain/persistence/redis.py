@@ -53,6 +53,10 @@ class _RedisList:
         return self.db.delete(self.LIST_NAME)
 
     @redis_handle
+    def flushall(self):
+        return self.db.flushall()
+
+    @redis_handle
     def get_list_length(self):
         return self.db.llen(self.LIST_NAME) or 0
 

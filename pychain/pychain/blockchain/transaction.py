@@ -11,6 +11,12 @@ class Transaction:
         """Only allow json encodable things for now"""
         # the data we store needs to be sorted, otheriwse hashing will not work in a distributed
         # manner
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                pass
+
         if hasattr(data, 'keys'):
             data = OrderedDict(sorted(data.items(), key=lambda t: t[0]))
 

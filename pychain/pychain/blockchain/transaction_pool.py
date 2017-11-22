@@ -21,6 +21,10 @@ def add_transaction(transaction, block_size=None, is_broadcasting=False):
         broadcast(transaction)
 
     block_size = block_size if block_size is not None else BLOCK_SIZE
+
+    # Each endpoint, dbs 1, 2 and 3 all start the mining process. Once complete, they will attempt
+    # to verify the block and add it.  The node who does this entire process first should win, even
+    # though all will eventually complete the process.
     if len(pool) >= block_size:
         transactions = pool.get_transactions()
         block = Chain.create_candidate_block(transactions)

@@ -86,8 +86,6 @@ def test_to_primitive(block):
         'header': header,
         'index': 1,
         'pow_hash': 'c73da18d9150d95f38402361a1be7213362170fd1031fc3b74ca245846bdc27e',
-        'transactions': [
-            ('a61deaef26c069e32bda388991cf1f07f0a6dd451bc6a7bdad3e34eecbbadb39', '"foobar"')
-        ]
+        'transactions': ['foobar'],
     }
     assert block.to_primitive() == expected

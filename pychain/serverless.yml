@@ -109,6 +109,16 @@ functions:
             parameters:
               paths:
                 db_number: true
+  AddNewBlock:
+    handler: handler.add_new_block
+    events:
+      - http:
+          path: /block/{db_number}
+          method: post
+          request:
+            parameters:
+              paths:
+                db_number: true
   Mine:
     handler: handler.sns_mine
     timeout: 60

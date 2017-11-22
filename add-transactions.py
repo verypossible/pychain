@@ -18,7 +18,7 @@ def create_fake_obj():
     }
 
 
-URL = 'https://vv9c7kd384.execute-api.us-east-1.amazonaws.com/dev/1'
+URL = 'https://6waijngu6i.execute-api.us-east-1.amazonaws.com/dev/3'
 data_array = [create_fake_obj() for i in range(21)]
 
 for obj in data_array[:5]:

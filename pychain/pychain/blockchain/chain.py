@@ -41,8 +41,6 @@ class _Chain:
         return iter(self.__blockchain)
 
     def _init_genesis_block(self):
-        print('Looking up genesis len', self.__db.db_num)
-
         if len(self) < 1:
             genesis_block = get_genesis_block()
             genesis_block.check_block_header()
@@ -50,9 +48,9 @@ class _Chain:
             self.add_block(genesis_block)
 
     def _reset(self):
-        print('Clearing chain')
-        print(self.__db.clear())
-        print('Chain cleared')
+        print('Clearing database with flushall')
+        print(self.__db.flushall())
+        print('Database nuked...init genesis block')
         self._init_genesis_block()
 
     def add_block(self, block):
