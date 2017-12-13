@@ -14,7 +14,6 @@ provider:
     subnetIds:
       - ${env:SUBNET_ID_A}
       - ${env:SUBNET_ID_B}
-      - ${env:SUBNET_ID_C}
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -47,6 +46,29 @@ package:
 
 resources:
   Resources:
+    NAT:
+      Type: AWS::EC2::NatGateway
+      Properties:
+        AllocationId:
+          Fn::GetAtt:
+          - EIP
+          - AllocationId
+        # this is the public subnet A
+        SubnetId: subnet-0ba2af43
+        Tags:
+          - Key: Name
+            Value: pychain
+    EIP:
+      Type: AWS::EC2::EIP
+      Properties:
+        Domain: vpc
+    Route:
+      Type: AWS::EC2::Route
+      Properties:
+        RouteTableId: rtb-35782d4f
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId:
+          Ref: NAT
     SNSMiningTopic:
       Type: AWS::SNS::Topic
       Properties:

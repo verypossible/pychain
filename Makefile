@@ -1,7 +1,7 @@
 NAME = 'bz/block'
 
 ENVDIR=envs
-LIBS_DIR=pychain/lib
+LIBS_DIR=serverless/lib
 
 
 run = docker run --rm -it \
@@ -37,7 +37,7 @@ clean :
 # make libs should be run from inside the container
 libs :
 	@test -d $(LIBS_DIR) || mkdir -p $(LIBS_DIR)
-	pip install -t $(LIBS_DIR) -r pychain/requirements.txt
+	pip install -t $(LIBS_DIR) -r serverless/requirements.txt
 	rm -rf $(LIBS_DIR)/*.dist-info
 	find $(LIBS_DIR) -name '*.pyc' | xargs rm
 	find $(LIBS_DIR) -name tests | xargs rm -rf
@@ -51,28 +51,15 @@ libs :
 #
 deploy : check-env
 ifeq ($(strip $(function)),)
-	cd pychain && sls deploy -s $(ENV)
+	cd serverless && sls deploy -s $(ENV)
 else
-	cd pychain && sls deploy function -s $(ENV) -f $(function)
+	cd serverless && sls deploy function -s $(ENV) -f $(function)
 endif
 .PHONY: deploy
 
-# shell :
-# 	docker-compose run --rm --service-ports app bash
-
-
-app :
-	docker-compose run --rm --service-ports app python pychain/app.py
-.PHONY: app
-
-
-# miner :
-# 	docker-compose run -d --rm --service-ports miner
-#
-#
 redis :
 	docker run -d --rm \
-		-v /Users/brianz/work/pychain/redis-data:/data \
+		-v ~/work/serverless/redis-data:/data \
 		-p "6379:6379" \
         --name=pychain-redis-$(ENV) \
 		redis:alpine

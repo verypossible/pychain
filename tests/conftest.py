@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 CWD = Path(__file__).resolve().parent
-code_dir = CWD / '../pychain'
+code_dir = CWD / '../serverless'
 sys.path.append(str(code_dir))
 
 os.environ.update({
