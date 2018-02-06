@@ -6,5 +6,4 @@ redis-data/
 __pycache__
 .coverage
 htmlcov
-pychain/lib
 envs
